@@ -69,12 +69,21 @@ abstract class AppDatabase : RoomDatabase() {
                     "business_pro_database"
                 )
                     .addMigrations(MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_30, MIGRATION_30_31)
-                    .fallbackToDestructiveMigration(dropAllTables = false) // 🛡️ CRITICAL FIX: Prevent freeze/crash if migration paths are missing
+                    // 🛡️ FIX: Changed to true to allow automatic recovery if a migration fails on different hardware
+                    .fallbackToDestructiveMigration(dropAllTables = true) 
                     .addCallback(DatabaseCallback(context))
                     .build()
                 INSTANCE = instance
                 instance
             }
+        }
+
+        /**
+         * 🛡️ CRITICAL FIX: Allows the app to reset the database instance after a restore operation.
+         * Without this, the app will continue to use the old, closed database object.
+         */
+        fun destroyInstance() {
+            INSTANCE = null
         }
 
         private class DatabaseCallback(private val context: Context) : RoomDatabase.Callback() {

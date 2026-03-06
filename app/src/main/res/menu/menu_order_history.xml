@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_sort_order_newest"
+        android:title="Order Date: Newest First"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_sort_order_oldest"
+        android:title="Order Date: Oldest First"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_sort_delivery_newest"
+        android:title="Delivery: Closest First"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_sort_delivery_oldest"
+        android:title="Delivery: Furthest First"
+        app:showAsAction="never" />
+
+</menu>

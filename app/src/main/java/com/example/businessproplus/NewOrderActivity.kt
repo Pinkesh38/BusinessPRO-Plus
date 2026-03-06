@@ -49,6 +49,9 @@ class NewOrderActivity : AppCompatActivity() {
     private var mediaRecorder: MediaRecorder? = null
     private var isRecording = false
 
+    private val MAX_PRICE = 10000000.0 // 1 Crore limit for UI stability
+    private val MAX_QTY = 1000000 // 1 Million limit
+
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
         val cameraGranted = permissions[Manifest.permission.CAMERA] ?: false
         val audioGranted = permissions[Manifest.permission.RECORD_AUDIO] ?: false
@@ -101,7 +104,7 @@ class NewOrderActivity : AppCompatActivity() {
     private fun setupListeners(sdfDate: SimpleDateFormat) {
         binding.btnPlusQty.setOnClickListener {
             val current = binding.etQuantity.text.toString().toIntOrNull() ?: 0
-            if (current < 999999) binding.etQuantity.setText((current + 1).toString())
+            if (current < MAX_QTY) binding.etQuantity.setText((current + 1).toString())
         }
         binding.btnMinusQty.setOnClickListener {
             val current = binding.etQuantity.text.toString().toIntOrNull() ?: 0
@@ -120,19 +123,28 @@ class NewOrderActivity : AppCompatActivity() {
         }
 
         binding.btnOrderDate.setOnClickListener {
-            DatePickerDialog(this, { _, year, month, day ->
+            val picker = DatePickerDialog(this, { _, year, month, day ->
                 orderDateCalendar.set(year, month, day)
                 binding.btnOrderDate.text = sdfDate.format(orderDateCalendar.time)
-            }, orderDateCalendar.get(Calendar.YEAR), orderDateCalendar.get(Calendar.MONTH), orderDateCalendar.get(Calendar.DAY_OF_MONTH)).show()
+            }, orderDateCalendar.get(Calendar.YEAR), orderDateCalendar.get(Calendar.MONTH), orderDateCalendar.get(Calendar.DAY_OF_MONTH))
+            
+            // 🛡️ QA FIX: Prevent "Time Traveler" fraud. Order date cannot be in future (optional) 
+            // or too far in past. Let's allow past but prevent future for Order Date.
+            picker.datePicker.maxDate = System.currentTimeMillis()
+            picker.show()
         }
 
         binding.btnDeliveryDate.setOnClickListener {
             val currentDelCal = Calendar.getInstance()
-            DatePickerDialog(this, { _, year, month, day ->
+            val picker = DatePickerDialog(this, { _, year, month, day ->
                 TimePickerDialog(this, { _, hour, minute ->
                     binding.btnDeliveryDate.text = String.format("%04d-%02d-%02d %02d:%02d", year, month + 1, day, hour, minute)
                 }, currentDelCal.get(Calendar.HOUR_OF_DAY), currentDelCal.get(Calendar.MINUTE), false).show()
-            }, currentDelCal.get(Calendar.YEAR), currentDelCal.get(Calendar.MONTH), currentDelCal.get(Calendar.DAY_OF_MONTH)).show()
+            }, currentDelCal.get(Calendar.YEAR), currentDelCal.get(Calendar.MONTH), currentDelCal.get(Calendar.DAY_OF_MONTH))
+            
+            // 🛡️ QA FIX: Delivery date must be Today or in Future
+            picker.datePicker.minDate = System.currentTimeMillis() - 1000
+            picker.show()
         }
 
         binding.etQuantity.doAfterTextChanged { calculateFinances() }
@@ -166,6 +178,7 @@ class NewOrderActivity : AppCompatActivity() {
         mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             MediaRecorder(this)
         } else {
+            @Suppress("DEPRECATION")
             MediaRecorder()
         }.apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
@@ -180,7 +193,7 @@ class NewOrderActivity : AppCompatActivity() {
                 binding.btnAudio.icon = ContextCompat.getDrawable(this@NewOrderActivity, android.R.drawable.ic_media_pause)
                 Toast.makeText(this@NewOrderActivity, "Recording started", Toast.LENGTH_SHORT).show()
             } catch (e: IOException) {
-                // Silently failing in production
+                // Fail silently or log
             }
         }
     }
@@ -191,7 +204,7 @@ class NewOrderActivity : AppCompatActivity() {
                 stop()
                 release()
             } catch (e: Exception) {
-                // Silently failing in production
+                // Fail silently or log
             }
         }
         mediaRecorder = null
@@ -208,12 +221,15 @@ class NewOrderActivity : AppCompatActivity() {
         val price = binding.etPrice.text.toString().toDoubleOrNull() ?: 0.0
         val advance = binding.etAdvancePayment.text.toString().toDoubleOrNull() ?: 0.0
         
-        // 🛡️ QA GUARD: Prevent negative numbers
-        val safePrice = if (price < 0) 0.0 else price
-        val safeAdvance = if (advance < 0) 0.0 else advance
-        
-        val total = qty * safePrice
-        val remaining = total - safeAdvance
+        // 🛡️ QA FIX: Prevent Billionaire Input overflows
+        if (qty > MAX_QTY || price > MAX_PRICE) {
+            binding.tvTotal.text = "INVALID"
+            binding.tvRemaining.text = "INVALID"
+            return
+        }
+
+        val total = qty * price
+        val remaining = total - advance
         
         binding.tvTotal.text = String.format("₹%.2f", total)
         binding.tvRemaining.text = String.format("₹%.2f", remaining)
@@ -235,32 +251,33 @@ class NewOrderActivity : AppCompatActivity() {
 
         val customerName = binding.etCustomerName.text.toString().trim()
         val itemDesc = binding.etItemDescription.text.toString().trim()
-        val qtyOrdered = binding.etQuantity.text.toString().toIntOrNull() ?: 0
-        val price = binding.etPrice.text.toString().toDoubleOrNull() ?: 0.0
-        val advance = binding.etAdvancePayment.text.toString().toDoubleOrNull() ?: 0.0
+        val qtyText = binding.etQuantity.text.toString().trim()
+        val priceText = binding.etPrice.text.toString().trim()
+        val advanceText = binding.etAdvancePayment.text.toString().trim()
 
-        // 🛡️ QA GUARD: Business Logic Validation
+        val qtyOrdered = qtyText.toIntOrNull() ?: 0
+        val price = priceText.toDoubleOrNull() ?: 0.0
+        val advance = advanceText.toDoubleOrNull() ?: 0.0
+
         if (customerName.isEmpty() || itemDesc.isEmpty() || qtyOrdered <= 0) {
             Toast.makeText(this, "Mandatory fields: Customer, Item, and Qty > 0", Toast.LENGTH_SHORT).show()
             return
         }
         
-        if (price < 0 || advance < 0) {
-            Toast.makeText(this, "Price and Advance cannot be negative!", Toast.LENGTH_SHORT).show()
+        // 🛡️ QA FIX: Final Validation for extreme inputs
+        if (qtyOrdered > MAX_QTY || price > MAX_PRICE || advance > (qtyOrdered * price)) {
+            Toast.makeText(this, "Invalid financial values or quantity too high.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // 🛡️ QA GUARD: UI Lock to prevent multi-tap stock duplication
         binding.btnSaveOrder.isEnabled = false
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Ensure customer exists
                 if (db.partyDao().getPartyByName(customerName) == null) {
                     db.partyDao().insertParty(Party(partyType = "Customer", companyName = customerName, contactPerson = customerName, contactNo = binding.etContactNo.text.toString(), address = "", creditLimit = 0.0, creditPeriodDays = 0, notes = "Auto-created"))
                 }
 
-                // Atomic Stock Update
                 val item = db.itemDao().getItemByName(itemDesc)
                 if (item != null) {
                     val stockChange = if (isEditMode) qtyOrdered - initialQuantity else qtyOrdered
@@ -296,13 +313,13 @@ class NewOrderActivity : AppCompatActivity() {
                 if (isEditMode) db.orderDao().updateOrder(order) else db.orderDao().insertOrder(order)
 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@NewOrderActivity, "Order Secured & Stock Adjusted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@NewOrderActivity, "Order Saved", Toast.LENGTH_SHORT).show()
                     finish()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     binding.btnSaveOrder.isEnabled = true
-                    Toast.makeText(this@NewOrderActivity, "Critical Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@NewOrderActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }

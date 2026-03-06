@@ -1,19 +1,22 @@
 package com.example.businessproplus
 
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class CustomerReportActivity : AppCompatActivity() {
+    
+    private var searchJob: Job? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_customer_report)
@@ -22,6 +25,7 @@ class CustomerReportActivity : AppCompatActivity() {
         val btnGenerateCustomerReport = findViewById<Button>(R.id.btnGenerateCustomerReport)
         val tvCustomerTotalSpent = findViewById<TextView>(R.id.tvCustomerTotalSpent)
         val lvCustomerOrders = findViewById<ListView>(R.id.lvCustomerOrders)
+        val progressBar = findViewById<ProgressBar>(R.id.progressBarCustomerReport)
 
         btnGenerateCustomerReport.setOnClickListener {
             val customerName = etSearchCustomerReport.text.toString().trim()
@@ -31,22 +35,38 @@ class CustomerReportActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Search the database for this specific person
-            lifecycleScope.launch(Dispatchers.IO) {
-                val database = AppDatabase.getDatabase(applicationContext)
-                val orders = database.orderDao().getOrdersForCustomer(customerName)
-                val totalSpent = database.orderDao().getTotalRevenueForCustomer(customerName) ?: 0.0
+            // 🛡️ QA FIX: Prevent "Search Spam" and UI Hangs
+            searchJob?.cancel() // Cancel any existing search
+            btnGenerateCustomerReport.isEnabled = false
+            progressBar?.visibility = View.VISIBLE
 
-                withContext(Dispatchers.Main) {
-                    if (orders.isEmpty()) {
-                        Toast.makeText(this@CustomerReportActivity, "No records found for $customerName", Toast.LENGTH_SHORT).show()
-                        tvCustomerTotalSpent.text = "₹0.00"
-                        lvCustomerOrders.adapter = null
-                    } else {
-                        tvCustomerTotalSpent.text = String.format("₹%.2f", totalSpent)
+            searchJob = lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val database = AppDatabase.getDatabase(applicationContext)
+                    val orders = database.orderDao().getOrdersForCustomer(customerName)
+                    val totalSpent = database.orderDao().getTotalRevenueForCustomer(customerName) ?: 0.0
 
-                        val displayList = orders.map { "Date: ${it.orderDate}\nItem: ${it.itemDescription} | ₹${it.total}" }
-                        lvCustomerOrders.adapter = ArrayAdapter(this@CustomerReportActivity, android.R.layout.simple_list_item_1, displayList)
+                    withContext(Dispatchers.Main) {
+                        if (!isFinishing && !isDestroyed) {
+                            if (orders.isEmpty()) {
+                                Toast.makeText(this@CustomerReportActivity, "No records found for $customerName", Toast.LENGTH_SHORT).show()
+                                tvCustomerTotalSpent.text = "₹0.00"
+                                lvCustomerOrders.adapter = null
+                            } else {
+                                tvCustomerTotalSpent.text = String.format("₹%.2f", totalSpent)
+                                val displayList = orders.map { "Date: ${it.orderDate}\nItem: ${it.itemDescription} | ₹${it.total}" }
+                                lvCustomerOrders.adapter = ArrayAdapter(this@CustomerReportActivity, android.R.layout.simple_list_item_1, displayList)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@CustomerReportActivity, "Search error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                } finally {
+                    withContext(Dispatchers.Main) {
+                        btnGenerateCustomerReport.isEnabled = true
+                        progressBar?.visibility = View.GONE
                     }
                 }
             }

@@ -38,7 +38,6 @@ class SettingsActivity : AppCompatActivity() {
             try {
                 val account = task.getResult(ApiException::class.java)
                 Toast.makeText(this, "Sign-In Success", Toast.LENGTH_SHORT).show()
-                // Auto-trigger backup after sign-in
                 val prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
                 performBackup(prefs)
             } catch (e: ApiException) {
@@ -56,7 +55,6 @@ class SettingsActivity : AppCompatActivity() {
         setupViews()
         setupListeners()
 
-        // 🛡️ Initialize Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .requestScopes(Scope(DriveScopes.DRIVE_FILE))
@@ -82,17 +80,14 @@ class SettingsActivity : AppCompatActivity() {
             binding.layoutAdminSettings.visibility = View.GONE
         }
 
-        // Display Last Backup Time
         val lastBackupTime = BackupPrefs(this).getLastBackupTime()
         binding.tvLastBackup.text = "Last Backup: $lastBackupTime"
 
-        // Timeout Spinner
         val timeouts = arrayOf("5 Minutes", "10 Minutes", "30 Minutes", "Never")
         binding.spinnerTimeout.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, timeouts)
         val currentTimeout = prefs.getString("LOGOUT_TIMEOUT", "10 Minutes")
         binding.spinnerTimeout.setSelection(timeouts.indexOf(currentTimeout))
 
-        // Language Spinner
         val languages = arrayOf("English", "हिंदी (Hindi)", "ગુજરાતી (Gujarati)")
         binding.spinnerLanguageSettings.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, languages)
     }
@@ -133,11 +128,8 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.layoutChangePin.setOnClickListener { startActivity(Intent(this, ChangePinActivity::class.java)) }
         binding.layoutErrorLog.setOnClickListener { startActivity(Intent(this, ErrorLogActivity::class.java)) }
-        
-        // 🛡️ FIX: Added missing listener for Activity Logs
         binding.layoutActivityLog.setOnClickListener { startActivity(Intent(this, UserActivityActivity::class.java)) }
         
-        // BACKUP BUTTON CLICK
         binding.btnBackup.setOnClickListener {
             val account = GoogleSignIn.getLastSignedInAccount(this)
             if (account == null) {
@@ -147,7 +139,6 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        // RESTORE BUTTON CLICK WITH CONFIRMATION DIALOG
         binding.btnRestore.setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("Restore Backup?")
@@ -159,6 +150,10 @@ class SettingsActivity : AppCompatActivity() {
                         binding.loadingOverlay.visibility = View.GONE
                         if (success) {
                             Toast.makeText(this@SettingsActivity, "Restore Success", Toast.LENGTH_SHORT).show()
+                            
+                            // 🛡️ CRITICAL RECOVERY FIX: Reset the Database instance
+                            AppDatabase.destroyInstance()
+                            
                             val intent = Intent(this@SettingsActivity, SplashActivity::class.java)
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
@@ -175,7 +170,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.btnHardReset.setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("Hard Reset")
-                .setMessage(R.string.reset_confirmation)
+                .setMessage("Reset Everything?")
                 .setPositiveButton("Reset Everything") { _, _ -> performHardReset() }
                 .setNegativeButton("Cancel", null)
                 .show()

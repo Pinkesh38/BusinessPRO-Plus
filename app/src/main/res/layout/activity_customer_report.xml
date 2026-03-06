@@ -1,19 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="20dp" android:background="#F5F5F5">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    android:padding="20dp">
 
-    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Customer Intelligence" android:textSize="24sp" android:textStyle="bold" android:layout_marginBottom="15dp"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <EditText android:id="@+id/etSearchCustomerReport" android:layout_width="match_parent" android:layout_height="60dp" android:hint="Type exact Customer Name &amp; click Search" android:inputType="textPersonName" android:layout_marginBottom="10dp"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:text="Customer Intelligence"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
-    <Button android:id="@+id/btnGenerateCustomerReport" android:layout_width="match_parent" android:layout_height="60dp" android:text="Generate Report" android:backgroundTint="#2196F3" android:layout_marginBottom="20dp"/>
+        <EditText
+            android:id="@+id/etSearchCustomerReport"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="10dp"
+            android:hint="Type exact Customer Name &amp; click Search"
+            android:inputType="textPersonName" />
 
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="15dp" android:background="#E8F5E9" android:layout_marginBottom="15dp" android:elevation="2dp">
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="LIFETIME REVENUE FROM CUSTOMER" android:textSize="12sp" android:textStyle="bold" android:textColor="#388E3C"/>
-        <TextView android:id="@+id/tvCustomerTotalSpent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₹0.00" android:textSize="28sp" android:textStyle="bold" android:textColor="#388E3C" android:layout_marginTop="5dp"/>
+        <Button
+            android:id="@+id/btnGenerateCustomerReport"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="20dp"
+            android:backgroundTint="#2196F3"
+            android:text="Generate Report" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:background="#E8F5E9"
+            android:elevation="2dp"
+            android:orientation="vertical"
+            android:padding="15dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LIFETIME REVENUE FROM CUSTOMER"
+                android:textColor="#388E3C"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvCustomerTotalSpent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="₹0.00"
+                android:textColor="#388E3C"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="Order History for Customer:"
+            android:textStyle="bold" />
+
+        <ListView
+            android:id="@+id/lvCustomerOrders"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
     </LinearLayout>
 
-    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Order History for Customer:" android:textStyle="bold" android:layout_marginBottom="5dp"/>
+    <ProgressBar
+        android:id="@+id/progressBarCustomerReport"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
 
-    <ListView android:id="@+id/lvCustomerOrders" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
-
-</LinearLayout>
+</RelativeLayout>

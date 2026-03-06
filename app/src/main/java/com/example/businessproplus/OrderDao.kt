@@ -60,24 +60,19 @@ interface OrderDao {
         SELECT * FROM orders_table 
         WHERE isDeleted = 0
         AND (:partyName == '' OR customerName LIKE '%' || :partyName || '%')
-        AND (:itemName == '' OR itemDescription LIKE '%' || :itemName || '%')
         AND (:status == 'All' OR status = :status)
-        AND (:startDate == '' OR orderDate >= :startDate)
-        AND (:endDate == '' OR orderDate <= :endDate)
         ORDER BY 
-        CASE WHEN :sortByLatest = 1 THEN orderDate END DESC,
-        CASE WHEN :sortByLatest = 1 THEN id END DESC,
-        CASE WHEN :sortByLatest = 0 THEN orderDate END ASC,
-        CASE WHEN :sortByLatest = 0 THEN id END ASC
+        CASE WHEN :sortType = 0 THEN orderDate END DESC,
+        CASE WHEN :sortType = 1 THEN orderDate END ASC,
+        CASE WHEN :sortType = 2 THEN deliveryDate END DESC,
+        CASE WHEN :sortType = 3 THEN deliveryDate END ASC,
+        id DESC
         LIMIT :limit OFFSET :offset
     """)
     suspend fun getFilteredOrders(
         partyName: String,
-        itemName: String,
         status: String,
-        startDate: String,
-        endDate: String,
-        sortByLatest: Int,
+        sortType: Int,
         limit: Int,
         offset: Int
     ): List<Order>
@@ -120,7 +115,6 @@ interface OrderDao {
     @Query("SELECT id, customerName, itemDescription, quantity, status, orderDate FROM orders_table WHERE isDeleted = 0 ORDER BY id DESC")
     suspend fun getOrderSummaries(): List<OrderSummary>
 
-    // 💰 NEW: Outstanding Payment Queries
     @Query("SELECT SUM(dueAmount) FROM orders_table WHERE isDeleted = 0 AND isPaid = 0")
     suspend fun getTotalOutstandingPayment(): Double?
 
@@ -133,6 +127,9 @@ interface OrderDao {
         ORDER BY totalDue DESC
     """)
     suspend fun getClientWisePendingPayments(): List<ClientPendingPayment>
+
+    @Query("SELECT * FROM orders_table WHERE id = :orderId")
+    fun getOrderByIdLive(orderId: Int): androidx.lifecycle.LiveData<Order?>
 }
 
 data class OrderSummary(

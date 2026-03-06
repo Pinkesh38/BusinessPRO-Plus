@@ -3,6 +3,8 @@ package com.example.businessproplus
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +28,7 @@ class PartyManagementActivity : AppCompatActivity() {
     
     private var allPartiesList: List<Party> = emptyList()
     private var searchJob: Job? = null
+    private var isSortAscending = true // A to Z
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,8 +53,25 @@ class PartyManagementActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
     }
 
-    private fun initViews() {
-        // Redundant with View Binding but kept for logic overview
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_party_management, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_sort_az -> {
+                isSortAscending = true
+                filterParties()
+                true
+            }
+            R.id.action_sort_za -> {
+                isSortAscending = false
+                filterParties()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun setupRecyclerView() {
@@ -136,8 +156,14 @@ class PartyManagementActivity : AppCompatActivity() {
                 matchesSearch && matchesType
             }
             
+            val sortedList = if (isSortAscending) {
+                filtered.sortedBy { it.companyName.lowercase() }
+            } else {
+                filtered.sortedByDescending { it.companyName.lowercase() }
+            }
+            
             withContext(Dispatchers.Main) {
-                adapter.updateList(filtered)
+                adapter.updateList(sortedList)
             }
         }
     }

@@ -3,6 +3,8 @@ package com.example.businessproplus
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -27,6 +29,7 @@ class OrderHistoryActivity : AppCompatActivity() {
     private lateinit var adapter: OrderHistoryAdapter
     private var searchJob: Job? = null
     private var orderList: List<Order> = emptyList()
+    private var currentSortType = 0 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +48,6 @@ class OrderHistoryActivity : AppCompatActivity() {
         setupFilters()
         setupSwipeToActions()
 
-        // 🎯 CUSTOMER FILTER HANDLER: Check if we are viewing a specific person's orders
         val partyName = intent.getStringExtra("PARTY_NAME")
         if (partyName != null) {
             binding.etSearch.setText(partyName)
@@ -57,6 +59,7 @@ class OrderHistoryActivity : AppCompatActivity() {
             when (filterStatus) {
                 "Pending" -> binding.chipGroupFilters.check(R.id.chipPending)
                 "Working" -> binding.chipGroupFilters.check(R.id.chipWorking)
+                "Delayed" -> binding.chipGroupFilters.check(R.id.chipDelayed)
                 "Completed" -> binding.chipGroupFilters.check(R.id.chipCompleted)
             }
         }
@@ -79,6 +82,21 @@ class OrderHistoryActivity : AppCompatActivity() {
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
         binding.toolbar.setNavigationOnClickListener { finish() }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_order_history, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_sort_order_newest -> { currentSortType = 0; loadOrders(binding.etSearch.text.toString()); true }
+            R.id.action_sort_order_oldest -> { currentSortType = 1; loadOrders(binding.etSearch.text.toString()); true }
+            R.id.action_sort_delivery_newest -> { currentSortType = 2; loadOrders(binding.etSearch.text.toString()); true }
+            R.id.action_sort_delivery_oldest -> { currentSortType = 3; loadOrders(binding.etSearch.text.toString()); true }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun setupRecyclerView() {
@@ -133,13 +151,21 @@ class OrderHistoryActivity : AppCompatActivity() {
             val selectedStatus = when (binding.chipGroupFilters.checkedChipId) {
                 R.id.chipPending -> "Pending"
                 R.id.chipWorking -> "Working"
+                R.id.chipDelayed -> "Delayed"
                 R.id.chipCompleted -> "Completed"
                 R.id.chipDelivered -> "Delivered"
                 R.id.chipCancelled -> "Cancelled"
                 else -> "All"
             }
-            // Use exact name query if we are filtering by party, otherwise use LIKE
-            val filteredList = db.orderDao().getFilteredOrders(query, "", selectedStatus, "", "", 1, 100, 0)
+            
+            val filteredList = db.orderDao().getFilteredOrders(
+                partyName = query,
+                status = selectedStatus,
+                sortType = currentSortType,
+                limit = 200,
+                offset = 0
+            )
+            
             withContext(Dispatchers.Main) {
                 orderList = filteredList
                 adapter.updateList(filteredList)
@@ -149,8 +175,23 @@ class OrderHistoryActivity : AppCompatActivity() {
 
     private fun deleteOrder(order: Order) {
         lifecycleScope.launch(Dispatchers.IO) {
-            AppDatabase.getDatabase(applicationContext).orderDao().delete(order)
-            withContext(Dispatchers.Main) { loadOrders(binding.etSearch.text.toString()) }
+            val db = AppDatabase.getDatabase(applicationContext)
+            
+            // 🛡️ QA FIX: Restore inventory stock when an order is deleted
+            val item = db.itemDao().getItemByName(order.itemDescription)
+            if (item != null) {
+                item.currentStock += order.quantity
+                db.itemDao().updateItem(item)
+            }
+
+            // Soft delete
+            val updatedOrder = order.copy(isDeleted = true)
+            db.orderDao().updateOrder(updatedOrder)
+            
+            withContext(Dispatchers.Main) { 
+                Toast.makeText(this@OrderHistoryActivity, "Order deleted & stock restored.", Toast.LENGTH_SHORT).show()
+                loadOrders(binding.etSearch.text.toString()) 
+            }
         }
     }
 }
