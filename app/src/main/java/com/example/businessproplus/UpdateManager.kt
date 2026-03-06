@@ -18,8 +18,8 @@ import java.net.URL
 
 class UpdateManager(private val context: Context) {
 
-    // 🛡️ CONFIGURATION: Replace with your raw GitHub JSON URL
-    private val UPDATE_JSON_URL = "https://raw.githubusercontent.com/yourusername/yourrepo/main/update.json"
+    // 🛡️ CONFIGURATION: This MUST point to the raw JSON file, not the APK directly.
+    private val UPDATE_JSON_URL = "https://raw.githubusercontent.com/Pinkesh38/BusinessPRO-Plus/main/update.json"
 
     suspend fun checkForUpdates() {
         val updateInfo = fetchUpdateInfo() ?: return
@@ -53,7 +53,7 @@ class UpdateManager(private val context: Context) {
                 releaseNotes = json.getString("releaseNotes")
             )
         } catch (e: Exception) {
-            Log.e("UpdateManager", "Failed to fetch update info", e)
+            Log.e("UpdateManager", "Failed to fetch update info from: $UPDATE_JSON_URL", e)
             null
         }
     }
