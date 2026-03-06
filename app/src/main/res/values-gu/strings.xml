@@ -1,0 +1,50 @@
+<resources>
+    <string name="login_fingerprint">ફિંગરપ્રિન્ટ વડે લૉગિન કરો</string>
+    <string name="login_admin_prompt">અથવા એડમિન કોડનો ઉપયોગ કરો:</string>
+    <string name="login_admin_hint">એડમિન પિન દાખલ કરો</string>
+    <string name="login_admin_btn">કોડ વડે અનલૉક કરો</string>
+
+    <!-- Dashboard Strings -->
+    <string name="dashboard_title">ડેશબોર્ડ</string>
+    <string name="btn_profile">મારી પ્રોફાઇલ</string>
+    <string name="btn_logout">લોગ આઉટ</string>
+    <string name="section_sales">વેચાણ અને ઓર્ડર</string>
+    <string name="btn_new_order">નવો\nઓર્ડર</string>
+    <string name="btn_order_history">ઓર્ડર\nઇતિહાસ</string>
+    <string name="section_business">વ્યવસાય સંચાલન</string>
+    <string name="btn_parties">પાર્ટીઓ\n(ગ્રાહકો)</string>
+    <string name="btn_inventory">સ્ટોક\nઇન્વેન્ટરી</string>
+    <string name="btn_missed_selling">ચૂકી ગયેલ\nવેચાણ</string>
+    <string name="btn_reports">વ્યવસાય\nરિપોર્ટ</string>
+    <string name="section_tools">સાધનો અને સુરક્ષા</string>
+    <string name="btn_ohms_calc">ઓહ્મ\nકેલ્ક્યુલેટર</string>
+    <string name="btn_drive_backup">ડ્રાઇવ\nબેકઅપ</string>
+    <string name="btn_change_pin">પિન\nબદલો</string>
+    <string name="btn_manage_users">વપરાશકર્તા\nસંચાલન</string>
+    <string name="btn_enable_auto_sync">ઓટો સિંક ચાલુ કરો</string>
+    <string name="btn_error_logs">સિસ્ટમ એરર લોગ્સ</string>
+
+    <!-- New Order Screen Strings -->
+    <string name="new_order_title">નવો ઓર્ડર બનાવો</string>
+    <string name="label_customer_info">ગ્રાહકની માહિતી</string>
+    <string name="hint_customer_name">ગ્રાહકનું નામ</string>
+    <string name="hint_contact_no">સંપર્ક નંબર</string>
+    <string name="label_order_details">ઓર્ડરની વિગતો</string>
+    <string name="hint_item_desc">વસ્તુનું વર્ણન</string>
+    <string name="hint_qty">જથ્થો</string>
+    <string name="hint_price">કિંમત (₹)</string>
+    <string name="hint_advance">એડવાન્સ પેમેન્ટ (₹)</string>
+    <string name="label_total">કુલ: ₹%1$.1f</string>
+    <string name="label_remaining">બાકી: ₹%1$.1f</string>
+    <string name="label_media">મીડિયા જોડાણો</string>
+    <string name="btn_photo">ફોટો</string>
+    <string name="btn_video">વીડિયો</string>
+    <string name="btn_voice">અવાજ</string>
+    <string name="label_scheduling">શેડ્યુલિંગ</string>
+    <string name="label_order_date">ઓર્ડરની તારીખ: %1$s</string>
+    <string name="btn_select_delivery">ડિલિવરીની તારીખ અને સમય પસંદ કરો</string>
+    <string name="label_delivery_date">ડિલિવરી: %1$s</string>
+    <string name="btn_save_order">ઓર્ડર સેવ કરો</string>
+    <string name="error_customer_name_required">કૃપા કરીને ગ્રાહકનું નામ દાખલ કરો!</string>
+    <string name="order_saved_success">ઓર્ડર સફળતાપૂર્વક સેવ થયો!</string>
+</resources>

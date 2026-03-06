@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardOrder"
+    style="@style/ModernCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="6dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Main Content (Visible) -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvOrderNo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="#ORD-1024"
+                android:textColor="@color/primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvOrderDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tvOrderNo"
+                android:layout_marginTop="2dp"
+                android:text="Oct 24, 2023"
+                android:textColor="@color/on_surface_variant"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvPartyName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:layout_toEndOf="@id/tvOrderNo"
+                android:text="Shree Traders"
+                android:textColor="@color/on_surface"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:text="PENDING"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </RelativeLayout>
+
+        <!-- 🚀 NEW: Order Processing Workflow (Visual Stepper) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingBottom="8dp">
+
+                <!-- Step 1: Placed -->
+                <ImageView
+                    android:id="@+id/step1"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/checkbox_on_background"
+                    app:tint="@color/on_surface_variant" />
+                <View
+                    android:id="@+id/line1"
+                    android:layout_width="0dp"
+                    android:layout_height="2dp"
+                    android:layout_weight="1"
+                    android:background="@color/on_surface_variant" />
+
+                <!-- Step 2: Picking -->
+                <ImageView
+                    android:id="@+id/step2"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/checkbox_on_background"
+                    app:tint="@color/on_surface_variant" />
+                <View
+                    android:id="@+id/line2"
+                    android:layout_width="0dp"
+                    android:layout_height="2dp"
+                    android:layout_weight="1"
+                    android:background="@color/on_surface_variant" />
+
+                <!-- Step 3: Processing -->
+                <ImageView
+                    android:id="@+id/step3"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/checkbox_on_background"
+                    app:tint="@color/on_surface_variant" />
+                <View
+                    android:id="@+id/line3"
+                    android:layout_width="0dp"
+                    android:layout_height="2dp"
+                    android:layout_weight="1"
+                    android:background="@color/on_surface_variant" />
+
+                <!-- Step 4: Quality -->
+                <ImageView
+                    android:id="@+id/step4"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/checkbox_on_background"
+                    app:tint="@color/on_surface_variant" />
+                <View
+                    android:id="@+id/line4"
+                    android:layout_width="0dp"
+                    android:layout_height="2dp"
+                    android:layout_weight="1"
+                    android:background="@color/on_surface_variant" />
+
+                <!-- Step 5: Shipping -->
+                <ImageView
+                    android:id="@+id/step5"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/checkbox_on_background"
+                    app:tint="@color/on_surface_variant" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Placed" android:textSize="8sp" android:gravity="center" android:textColor="@color/on_surface_variant"/>
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Inventory" android:textSize="8sp" android:gravity="center" android:textColor="@color/on_surface_variant"/>
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Technical" android:textSize="8sp" android:gravity="center" android:textColor="@color/on_surface_variant"/>
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Finished" android:textSize="8sp" android:gravity="center" android:textColor="@color/on_surface_variant"/>
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Delivered" android:textSize="8sp" android:gravity="center" android:textColor="@color/on_surface_variant"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Milestone / Progress Info Text -->
+        <LinearLayout
+            android:id="@+id/layoutMilestones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="12dp">
+
+            <TextView
+                android:id="@+id/tvMilestoneInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Status: Pending"
+                android:textSize="12sp"
+                android:textStyle="italic"
+                android:textColor="@color/on_surface_variant" />
+
+        </LinearLayout>
+
+        <!-- Expandable Section (Initially Hidden) -->
+        <LinearLayout
+            android:id="@+id/layoutDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="16dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="12dp"
+                android:background="#1F000000" />
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Items:"
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvItemDesc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:text="Mica Heater 2x2"
+                    android:textColor="@color/on_surface"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Total Amount:"
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvTotalAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="4dp"
+                    android:text="₹4,500"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Pending Payment:"
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvRemainingPayment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="4dp"
+                    android:text="₹1,500"
+                    android:textColor="@color/accent_red"
+                    android:textSize="13sp" />
+            </GridLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnViewDetails"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Process"
+                    app:icon="@android:drawable/ic_menu_info_details" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDeleteOrder"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Delete"
+                    android:textColor="@color/accent_red"
+                    app:icon="@android:drawable/ic_menu_delete"
+                    app:iconTint="@color/accent_red" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

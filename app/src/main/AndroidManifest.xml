@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <application
+        android:name=".BusinessProApp"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.BusinessPRO">
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UserActivityActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CalculationHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UserProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CategoryManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".GeneratePdfActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ChangePinActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ManageUsersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ErrorLogActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CustomerReportActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OrderProcessingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MissedSellingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddMissedItemActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ReportsDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OhmsCalculatorActivity"
+            android:exported="false" />
+        <activity
+            android:name=".StockManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddItemActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PartyManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddPartyActivity"
+            android:exported="false" />
+        <activity
+            android:name=".OrderHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NewOrderActivity"
+            android:exported="false" />
+        <activity
+            android:name=".InventoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CloudSyncActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>

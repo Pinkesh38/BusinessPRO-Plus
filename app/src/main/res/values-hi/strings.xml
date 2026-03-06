@@ -1,0 +1,78 @@
+<resources>
+    <string name="login_fingerprint">फिंगरप्रिंट के साथ लॉगिन करें</string>
+    <string name="login_admin_prompt">या एडमिन कोड का उपयोग करें:</string>
+    <string name="login_admin_hint">एडमिन पिन दर्ज करें</string>
+    <string name="login_admin_btn">कोड के साथ अनलॉक करें</string>
+
+    <!-- Dashboard Strings -->
+    <string name="dashboard_title">डैशबोर्ड</string>
+    <string name="btn_profile">मेरी प्रोफ़ाइल</string>
+    <string name="btn_logout">लॉग आउट</string>
+    <string name="section_sales">बिक्री और ऑर्डर</string>
+    <string name="btn_new_order">नया\nऑर्डर</string>
+    <string name="btn_order_history">ऑर्डर\nइतिहास</string>
+    <string name="section_business">व्यवसाय प्रबंधन</string>
+    <string name="btn_parties">पार्टियां\n(ग्राहक)</string>
+    <string name="btn_inventory">स्टॉक\nइन्वेंट्री</string>
+    <string name="btn_missed_selling">छूटी हुई\nबिक्री</string>
+    <string name="btn_reports">व्यवसाय\nरिपोर्ट</string>
+    <string name="section_tools">टूल्स और सुरक्षा</string>
+    <string name="btn_ohms_calc">ओम\nकैलकुलेटर</string>
+    <string name="btn_drive_backup">ड्राइव\nबैकअप</string>
+    <string name="btn_change_pin">पिन\nबदलें</string>
+    <string name="btn_manage_users">यूजर\nमैनेजमेंट</string>
+    <string name="btn_enable_auto_sync">ऑटो सिंक चालू करें</string>
+    <string name="btn_error_logs">सिस्टम एरर लॉग्स</string>
+
+    <!-- New Order Screen Strings -->
+    <string name="new_order_title">नया ऑर्डर बनाएं</string>
+    <string name="label_customer_info">ग्राहक की जानकारी</string>
+    <string name="hint_customer_name">ग्राहक का नाम</string>
+    <string name="hint_contact_no">संपर्क नंबर</string>
+    <string name="label_order_details">ऑर्डर का विवरण</string>
+    <string name="hint_item_desc">वस्तु का विवरण</string>
+    <string name="hint_qty">मात्रा</string>
+    <string name="hint_price">कीमत (₹)</string>
+    <string name="hint_advance">अग्रिम भुगतान (₹)</string>
+    <string name="label_total">कुल: ₹%1$.1f</string>
+    <string name="label_remaining">शेष: ₹%1$.1f</string>
+    <string name="label_media">मीडिया अटैचमेंट</string>
+    <string name="btn_photo">फोटो</string>
+    <string name="btn_video">वीडियो</string>
+    <string name="btn_voice">आवाज</string>
+    <string name="label_scheduling">शेड्यूलिंग</string>
+    <string name="label_order_date">ऑर्डर की तारीख: %1$s</string>
+    <string name="btn_select_delivery">डिलीवरी की तारीख और समय चुनें</string>
+    <string name="label_delivery_date">डिलीवरी: %1$s</string>
+    <string name="btn_save_order">ऑर्डर सुरक्षित करें</string>
+    <string name="error_customer_name_required">कृपया ग्राहक का नाम दर्ज करें!</string>
+    <string name="order_saved_success">ऑर्डर सफलतापूर्वक सुरक्षित किया गया!</string>
+
+    <!-- Stock Management -->
+    <string name="stock_title">स्टॉक प्रबंधन</string>
+    <string name="btn_manage_categories">स्टॉक श्रेणियां प्रबंधित करें</string>
+    <string name="hint_search_items">वस्तुएं खोजें...</string>
+    <string name="btn_add_new_item">+ नई वस्तु जोड़ें</string>
+
+    <!-- Party Management -->
+    <string name="party_title">पार्टी प्रबंधन</string>
+    <string name="hint_search_party">कंपनी के नाम से खोजें...</string>
+    <string name="rb_all">सभी</string>
+    <string name="rb_customers">ग्राहक</string>
+    <string name="rb_suppliers">आपूर्तिकर्ता</string>
+    <string name="btn_add_new_party">+ नई पार्टी जोड़ें</string>
+
+    <!-- Order History -->
+    <string name="order_history_title">ऑर्डर इतिहास</string>
+    <string name="btn_history_add_new">+ नया ऑर्डर</string>
+
+    <!-- Ohm's Calculator -->
+    <string name="ohms_calc_title">इलेक्ट्रिकल कैलकुलेटर</string>
+    <string name="ohms_calc_instruction">बाकी की गणना करने के लिए कोई भी दो मान दर्ज करें।</string>
+    <string name="hint_voltage">वोल्टेज (V)</string>
+    <string name="hint_ampere">करंट / एम्पीयर (I)</string>
+    <string name="hint_ohms">प्रतिरोध / ओम (R)</string>
+    <string name="hint_watts">पावर / वाट (P)</string>
+    <string name="btn_calculate">गणना करें</string>
+    <string name="btn_reset">रीसेट</string>
+</resources>

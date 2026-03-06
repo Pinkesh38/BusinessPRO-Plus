@@ -1,0 +1,139 @@
+<resources>
+    <string name="app_name">BusinessPRO+</string>
+
+    <string name="login_fingerprint">Login with Fingerprint</string>
+    <string name="login_admin_prompt">Or use Admin Code:</string>
+    <string name="login_admin_hint">Enter Admin PIN</string>
+    <string name="login_admin_btn">Unlock with Code</string>
+    <string name="change_language">Select Language / भाषा / ભાષા</string>
+
+    <string name="error_item_name_required">Item Name is required!</string>
+    <string name="item_saved">Item Saved!</string>
+    <string name="uncategorized">Uncategorized</string>
+    <string name="default_unit">Pcs</string>
+
+    <string-array name="unit_options">
+        <item>Pieces</item>
+        <item>Meters</item>
+        <item>Kg</item>
+        <item>Liters</item>
+        <item>Sets</item>
+    </string-array>
+
+    <!-- Dashboard Strings -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="btn_profile">My Profile</string>
+    <string name="btn_logout">Log Out</string>
+    <string name="section_sales">SALES &amp; ORDERS</string>
+    <string name="btn_new_order">New\nOrder</string>
+    <string name="btn_order_history">Order\nHistory</string>
+    <string name="section_business">BUSINESS MANAGEMENT</string>
+    <string name="btn_parties">Parties\n(Clients)</string>
+    <string name="btn_inventory">Stock\nInventory</string>
+    <string name="btn_missed_selling">Missed\nSelling</string>
+    <string name="btn_reports">Business\nReports</string>
+    <string name="section_tools">TOOLS &amp; SECURITY</string>
+    <string name="btn_ohms_calc">Ohm\'s\nCalculator</string>
+    <string name="btn_drive_backup">Drive\nBackup</string>
+    <string name="btn_change_pin">Change\nPIN</string>
+    <string name="btn_manage_users">Manage\nUsers</string>
+    <string name="btn_error_logs">View System Error Logs</string>
+
+    <!-- New Order Screen Strings -->
+    <string name="new_order_title">Create New Order</string>
+    <string name="label_customer_info">CUSTOMER INFO</string>
+    <string name="hint_customer_name">Customer Name</string>
+    <string name="hint_contact_no">Contact Number</string>
+    <string name="label_order_details">ORDER DETAILS</string>
+    <string name="hint_item_desc">Item Description</string>
+    <string name="hint_qty">Qty</string>
+    <string name="hint_price">Price (₹)</string>
+    <string name="hint_advance">Advance Payment (₹)</string>
+    <string name="label_total">Total: ₹%1$.1f</string>
+    <string name="label_remaining">Rem: ₹%1$.1f</string>
+    <string name="label_media">MEDIA ATTACHMENTS</string>
+    <string name="btn_photo">Photo</string>
+    <string name="btn_video">Video</string>
+    <string name="btn_voice">Voice</string>
+    <string name="label_scheduling">SCHEDULING</string>
+    <string name="label_order_date">Order Date: %1$s</string>
+    <string name="btn_select_delivery">Select Delivery Date &amp; Time</string>
+    <string name="label_delivery_date">Delivery: %1$s</string>
+    <string name="btn_save_order">Save Order</string>
+    <string name="error_customer_name_required">Please enter a customer name!</string>
+    <string name="order_saved_success">Order Saved Successfully!</string>
+
+    <!-- Stock Management -->
+    <string name="stock_title">Stock Management</string>
+    <string name="btn_manage_categories">Manage Stock Categories</string>
+    <string name="hint_search_items">Search Items...</string>
+    <string name="btn_add_new_item">+ Add New Item</string>
+
+    <!-- Party Management -->
+    <string name="party_title">Party Management</string>
+    <string name="hint_search_party">Search by Company Name...</string>
+    <string name="rb_all">All</string>
+    <string name="rb_customers">Customers</string>
+    <string name="rb_suppliers">Suppliers</string>
+    <string name="btn_add_new_party">+ Add New Party</string>
+
+    <!-- Order History -->
+    <string name="order_history_title">Order History</string>
+    <string name="btn_history_add_new">+ Add New Order</string>
+
+    <!-- Ohm's Calculator -->
+    <string name="ohms_calc_title">Electrical Calculator</string>
+    <string name="ohms_calc_instruction">Enter ANY TWO values to calculate the rest.</string>
+    <string name="hint_voltage">Voltage (V)</string>
+    <string name="hint_ampere">Current / Ampere (I)</string>
+    <string name="hint_ohms">Resistance / Ohms (R)</string>
+    <string name="hint_watts">Power / Watts (P)</string>
+    <string name="btn_calculate">CALCULATE</string>
+    <string name="btn_reset">RESET</string>
+
+    <!-- Add Party Screen Strings -->
+    <string name="add_party_title">Add New Party</string>
+    <string name="label_company_details">COMPANY DETAILS</string>
+    <string name="label_party_type">Party Type:</string>
+    <string name="hint_company_name">Company Name</string>
+    <string name="hint_contact_person">Contact Person Name</string>
+    <string name="hint_contact_no_1">Contact No 1 (Main)</string>
+    <string name="hint_contact_no_2">Contact No 2 (Optional)</string>
+    <string name="hint_gst_no">GST Number (Optional)</string>
+    <string name="label_billing_credit">BILLING &amp; CREDIT</string>
+    <string name="hint_address">Address</string>
+    <string name="hint_credit_limit">Credit Limit (₹)</string>
+    <string name="hint_credit_days">Credit Period (Days)</string>
+    <string name="hint_party_notes">Additional Notes...</string>
+    <string name="label_blacklist">Blacklist this Party (Block Orders)</string>
+    <string name="btn_save_party">Save Party</string>
+    <string name="error_company_name_required">Company Name is required!</string>
+    <string name="party_saved_success">Party Saved Successfully!</string>
+    <string name="error_duplicate_party">A party with this name already exists!</string>
+
+    <!-- Missed Selling -->
+    <string name="missed_selling_title">Log Missed Sale</string>
+    <string name="hint_missed_item">What item did they ask for?</string>
+    <string name="hint_missed_party">Customer Name (Who asked?)</string>
+    <string name="label_missed_reason">Reason for Missed Sale:</string>
+    <string name="hint_missed_value">Estimated Value (₹)</string>
+    <string name="hint_competitor">Competitor info (Optional)</string>
+    <string name="btn_save_missed">Save Record</string>
+
+    <!-- Settings Screen Strings -->
+    <string name="settings_title">Settings</string>
+    <string name="section_security">SECURITY</string>
+    <string name="setting_change_pin">Change PIN</string>
+    <string name="setting_biometric">Biometric Login</string>
+    <string name="setting_timeout">Auto Logout Timeout</string>
+    <string name="section_backup">BACKUP &amp; SYNC</string>
+    <string name="setting_gdrive">Google Drive Sync</string>
+    <string name="section_preferences">PREFERENCES</string>
+    <string name="setting_language">Language</string>
+    <string name="setting_dark_mode">Dark Mode</string>
+    <string name="section_admin">ADMINISTRATIVE</string>
+    <string name="setting_activity_logs">User Activity Logs</string>
+    <string name="setting_error_logs">System Error Logs</string>
+    <string name="btn_hard_reset">Hard Reset Data</string>
+    <string name="reset_confirmation">Are you sure you want to delete ALL data? This cannot be undone.</string>
+</resources>

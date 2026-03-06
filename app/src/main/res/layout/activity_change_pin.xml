@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Change My PIN" android:textSize="24sp" android:textStyle="bold" android:layout_marginBottom="20dp"/>
+
+    <EditText android:id="@+id/etCurrentPin" android:layout_width="match_parent" android:layout_height="60dp" android:hint="Enter Current PIN" android:inputType="numberPassword" android:singleLine="true" android:imeOptions="actionNext" android:layout_marginBottom="10dp"/>
+
+    <EditText android:id="@+id/etNewPin" android:layout_width="match_parent" android:layout_height="60dp" android:hint="Enter New 4-Digit PIN" android:inputType="numberPassword" android:singleLine="true" android:imeOptions="actionNext" android:layout_marginBottom="10dp"/>
+
+    <EditText android:id="@+id/etConfirmNewPin" android:layout_width="match_parent" android:layout_height="60dp" android:hint="Confirm New PIN" android:inputType="numberPassword" android:singleLine="true" android:imeOptions="actionDone" android:layout_marginBottom="20dp"/>
+
+    <Button android:id="@+id/btnUpdatePin" android:layout_width="match_parent" android:layout_height="60dp" android:text="Update PIN" android:backgroundTint="#2196F3"/>
+
+</LinearLayout>

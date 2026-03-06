@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 Baseline Colors -->
+    <color name="primary">#1E3A8A</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="primary_container">#DBEAFE</color>
+    <color name="on_primary_container">#1E3A8A</color>
+
+    <color name="secondary">#4B5563</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="secondary_container">#F3F4F6</color>
+    <color name="on_secondary_container">#1F2937</color>
+
+    <color name="tertiary">#10B981</color>
+    <color name="on_tertiary">#FFFFFF</color>
+
+    <color name="error">#EF4444</color>
+    <color name="on_error">#FFFFFF</color>
+    <color name="error_container">#FEE2E2</color>
+    <color name="on_error_container">#991B1B</color>
+
+    <color name="background">#F8F9FA</color>
+    <color name="on_background">#111827</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="on_surface">#1F2937</color>
+    <color name="surface_variant">#F3F4F6</color>
+    <color name="on_surface_variant">#4B5563</color>
+    <color name="outline">#D1D5DB</color>
+
+    <!-- Legacy / Utility Colors (Re-added for Layout Compatibility) -->
+    <color name="accent_red">@color/error</color>
+    <color name="accent_red_soft">#FEE2E2</color>
+    <color name="accent_green">@color/tertiary</color>
+    <color name="accent_orange">#F59E0B</color>
+    <color name="accent_blue_soft">#E0F2FE</color>
+    <color name="grad_start">@color/background</color>
+    <color name="grad_end">@color/surface_variant</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_root_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="20dp"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Welcome back,"
+                    android:textColor="@color/on_surface_variant"
+                    android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/tvDashboardTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BusinessPRO+"
+                    android:textColor="@color/primary"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnProfile"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_circle_surface"
+                android:src="@android:drawable/ic_menu_edit"
+                app:tint="@color/primary"
+                android:elevation="2dp"
+                android:layout_marginEnd="12dp"
+                android:contentDescription="Profile" />
+
+            <ImageButton
+                android:id="@+id/btnSettings"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_circle_surface"
+                android:src="@android:drawable/ic_menu_preferences"
+                app:tint="@color/primary"
+                android:elevation="2dp"
+                android:layout_marginEnd="12dp"
+                android:contentDescription="Settings" />
+
+            <ImageButton
+                android:id="@+id/btnLogout"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_circle_surface"
+                android:src="@android:drawable/ic_lock_power_off"
+                app:tint="@color/accent_red"
+                android:elevation="2dp"
+                android:contentDescription="Logout" />
+        </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/main_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingBottom="32dp">
+
+            <!-- KPI Cards Row 1 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTotalOrders"
+                    style="@style/ModernCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TOTAL ORDERS" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/on_surface_variant"/>
+                        <TextView android:id="@+id/tvTotalOrders" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textSize="20sp" android:textStyle="bold" android:textColor="@color/primary"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardPendingOrders"
+                    style="@style/ModernCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PENDING" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/on_surface_variant"/>
+                        <TextView android:id="@+id/tvPendingOrders" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textSize="20sp" android:textStyle="bold" android:textColor="@color/accent_orange"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- KPI Cards Row 2 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="24dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardLowStock"
+                    style="@style/ModernCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="LOW STOCK" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/on_surface_variant"/>
+                        <TextView android:id="@+id/tvStockAlerts" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textSize="20sp" android:textStyle="bold" android:textColor="@color/accent_red"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardMissedSales"
+                    style="@style/ModernCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MISSED SALES" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/on_surface_variant"/>
+                        <TextView android:id="@+id/tvMissedSales" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₹0" android:textSize="20sp" android:textStyle="bold" android:textColor="@color/on_surface"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Monthly Orders Graph -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/ModernCard"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginBottom="24dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Revenue Trends"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:textColor="@color/on_surface_variant"
+                        android:layout_marginBottom="8dp"/>
+                    <com.github.mikephil.charting.charts.BarChart
+                        android:id="@+id/dashboardBarChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quick Navigation"
+                android:textColor="@color/on_surface"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Action Grid -->
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="3"
+                android:alignmentMode="alignMargins"
+                android:columnOrderPreserved="false"
+                android:layout_marginBottom="24dp">
+
+                <!-- Card New Order -->
+                <LinearLayout android:id="@+id/cardAddNewOrder" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:orientation="vertical" android:gravity="center" android:padding="8dp" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+                    <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@android:drawable/ic_input_add" app:tint="@color/primary" android:padding="8dp" android:background="@drawable/bg_circle_surface" android:elevation="1dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="New Order" android:textSize="12sp" android:layout_marginTop="4dp" android:textColor="@color/on_surface"/>
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/btnOrderHistory" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:orientation="vertical" android:gravity="center" android:padding="8dp" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+                    <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@android:drawable/ic_menu_recent_history" app:tint="@color/primary" android:padding="8dp" android:background="@drawable/bg_circle_surface" android:elevation="1dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="History" android:textSize="12sp" android:layout_marginTop="4dp" android:textColor="@color/on_surface"/>
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/btnInventory" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:orientation="vertical" android:gravity="center" android:padding="8dp" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+                    <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@android:drawable/ic_menu_sort_by_size" app:tint="@color/primary" android:padding="8dp" android:background="@drawable/bg_circle_surface" android:elevation="1dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Inventory" android:textSize="12sp" android:layout_marginTop="4dp" android:textColor="@color/on_surface"/>
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/btnReports" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:orientation="vertical" android:gravity="center" android:padding="8dp" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+                    <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@android:drawable/ic_menu_report_image" app:tint="@color/primary" android:padding="8dp" android:background="@drawable/bg_circle_surface" android:elevation="1dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Reports" android:textSize="12sp" android:layout_marginTop="4dp" android:textColor="@color/on_surface"/>
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/btnManageParties" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:orientation="vertical" android:gravity="center" android:padding="8dp" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+                    <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@android:drawable/ic_menu_my_calendar" app:tint="@color/primary" android:padding="8dp" android:background="@drawable/bg_circle_surface" android:elevation="1dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Clients" android:textSize="12sp" android:layout_marginTop="4dp" android:textColor="@color/on_surface"/>
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/btnTools" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:orientation="vertical" android:gravity="center" android:padding="8dp" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+                    <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@android:drawable/ic_menu_compass" app:tint="@color/primary" android:padding="8dp" android:background="@drawable/bg_circle_surface" android:elevation="1dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ohm's" android:textSize="12sp" android:layout_marginTop="4dp" android:textColor="@color/on_surface"/>
+                </LinearLayout>
+
+            </GridLayout>
+
+            <!-- Backup card simplified -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardBackupStatus"
+                style="@style/ModernCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:contentPadding="16dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView android:id="@+id/tvLastBackup" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Last Backup: Never" android:textColor="@color/on_surface_variant" android:textSize="14sp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddNewOrder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        app:srcCompat="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/primary"
+        app:tint="@color/white"
+        app:fabSize="normal"
+        android:contentDescription="New Order" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
