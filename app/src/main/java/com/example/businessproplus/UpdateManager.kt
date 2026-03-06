@@ -8,7 +8,10 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
@@ -18,10 +21,10 @@ import java.net.URL
 
 class UpdateManager(private val context: Context) {
 
-    // 🛡️ CONFIGURATION: This MUST point to the raw JSON file, not the APK directly.
     private val UPDATE_JSON_URL = "https://raw.githubusercontent.com/Pinkesh38/BusinessPRO-Plus/main/update.json"
 
     suspend fun checkForUpdates() {
+        Log.d("UpdateManager", "Checking for updates at: $UPDATE_JSON_URL")
         val updateInfo = fetchUpdateInfo() ?: return
 
         val currentVersionCode = try {
@@ -34,6 +37,8 @@ class UpdateManager(private val context: Context) {
         } catch (e: Exception) {
             0
         }
+
+        Log.d("UpdateManager", "Current: $currentVersionCode, Latest: ${updateInfo.versionCode}")
 
         if (updateInfo.versionCode > currentVersionCode) {
             withContext(Dispatchers.Main) {
@@ -53,7 +58,7 @@ class UpdateManager(private val context: Context) {
                 releaseNotes = json.getString("releaseNotes")
             )
         } catch (e: Exception) {
-            Log.e("UpdateManager", "Failed to fetch update info from: $UPDATE_JSON_URL", e)
+            Log.e("UpdateManager", "Failed to fetch update info. Ensure update.json exists on GitHub.", e)
             null
         }
     }
@@ -62,7 +67,9 @@ class UpdateManager(private val context: Context) {
         MaterialAlertDialogBuilder(context)
             .setTitle("New Update Available (v${info.versionName})")
             .setMessage("What's New:\n${info.releaseNotes}")
+            .setCancelable(false)
             .setPositiveButton("Update Now") { _, _ ->
+                Toast.makeText(context, "Download started...", Toast.LENGTH_SHORT).show()
                 downloadAndInstallApk(info.apkUrl)
             }
             .setNegativeButton("Later", null)
@@ -70,32 +77,36 @@ class UpdateManager(private val context: Context) {
     }
 
     private fun downloadAndInstallApk(url: String) {
-        val request = DownloadManager.Request(Uri.parse(url))
-            .setTitle("BusinessPRO+ Update")
-            .setDescription("Downloading latest version...")
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "business_pro_update.apk")
-            .setAllowedOverMetered(true)
-            .setAllowedOverRoaming(true)
+        try {
+            val request = DownloadManager.Request(Uri.parse(url))
+                .setTitle("BusinessPRO+ Update")
+                .setDescription("Downloading latest version...")
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "business_pro_update.apk")
 
-        val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        val downloadId = dm.enqueue(request)
+            val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val downloadId = dm.enqueue(request)
 
-        val onComplete = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
-                if (id == downloadId) {
-                    installApk()
-                    context.unregisterReceiver(this)
+            val onComplete = object : BroadcastReceiver() {
+                override fun onReceive(context: Context, intent: Intent) {
+                    val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
+                    if (id == downloadId) {
+                        installApk()
+                        context.unregisterReceiver(this)
+                    }
                 }
             }
-        }
-        
-        val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(onComplete, filter, Context.RECEIVER_EXPORTED)
-        } else {
-            context.registerReceiver(onComplete, filter)
+            
+            val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.registerReceiver(onComplete, filter, Context.RECEIVER_EXPORTED)
+            } else {
+                context.registerReceiver(onComplete, filter)
+            }
+        } catch (e: Exception) {
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(context, "Download failed: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
