@@ -1,6 +1,7 @@
 package com.example.businessproplus
 
 import android.content.Context
+import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.FileContent
@@ -29,9 +30,6 @@ class BackupManager(context: Context) {
     
     private val AES_KEY = "BusinessProPlusX"
 
-    /**
-     * Entry point for the full process: Local Backup + Encryption + Cloud Upload
-     */
     suspend fun performFullBackup(): Boolean = withContext(Dispatchers.IO) {
         try {
             val backupFile = createDatabaseBackupFile() ?: return@withContext false
@@ -50,28 +48,53 @@ class BackupManager(context: Context) {
         }
     }
 
+    /**
+     * 🛡️ QA HARDENING: Safe Restore Mechanism
+     * Implements a transactional-style restore to prevent data corruption.
+     */
     suspend fun restoreFromDrive(): Boolean = withContext(Dispatchers.IO) {
+        val dbFile = appContext.getDatabasePath("business_pro_database")
+        val oldDbBackup = File(dbFile.path + ".old")
+        
         try {
             val encryptedBackup = downloadBackupFromDrive() ?: return@withContext false
             val decryptedFile = File(appContext.cacheDir, "temp_decrypted.db")
             
             decryptFile(encryptedBackup, decryptedFile)
 
-            // 🛡️ SHUTDOWN: Ensure no other components are using the DB
+            // Shutdown existing connections
             AppDatabase.getDatabase(appContext).close()
 
-            val dbFile = appContext.getDatabasePath("business_pro_database")
-            decryptedFile.copyTo(dbFile, overwrite = true)
+            // Step 1: Backup current DB just in case
+            if (dbFile.exists()) {
+                dbFile.renameTo(oldDbBackup)
+            }
 
-            // Purge WAL journals
-            File(dbFile.path + "-wal").delete()
-            File(dbFile.path + "-shm").delete()
-
-            encryptedBackup.delete()
-            decryptedFile.delete()
-
-            return@withContext true
+            // Step 2: Try to copy new DB into place
+            try {
+                decryptedFile.copyTo(dbFile, overwrite = true)
+                
+                // Step 3: Success! Cleanup old files
+                oldDbBackup.delete()
+                File(dbFile.path + "-wal").delete()
+                File(dbFile.path + "-shm").delete()
+                
+                encryptedBackup.delete()
+                decryptedFile.delete()
+                return@withContext true
+            } catch (e: Exception) {
+                // Step 4: Restore old DB on failure
+                Log.e("BackupManager", "Restore copy failed, rolling back", e)
+                if (oldDbBackup.exists()) {
+                    oldDbBackup.renameTo(dbFile)
+                }
+                return@withContext false
+            }
         } catch (e: Exception) {
+            Log.e("BackupManager", "Restore process error", e)
+            if (oldDbBackup.exists() && !dbFile.exists()) {
+                oldDbBackup.renameTo(dbFile)
+            }
             false
         }
     }

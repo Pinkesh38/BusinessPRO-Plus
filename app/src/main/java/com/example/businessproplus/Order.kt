@@ -6,7 +6,14 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "orders_table",
-    indices = [Index(value = ["customerName"]), Index(value = ["orderDate"]), Index(value = ["status"])]
+    indices = [
+        Index(value = ["customerName"]), 
+        Index(value = ["orderDate"]), 
+        Index(value = ["status"]),
+        Index(value = ["deliveryDate"]), // 🛡️ SENIOR FIX: Speeds up "Closest Delivery" sorting
+        Index(value = ["status", "deliveryDate"]), // 🛡️ SENIOR FIX: Speeds up Dashboard filtering
+        Index(value = ["isDeleted"]) // 🛡️ SENIOR FIX: Speeds up all main list queries
+    ]
 )
 data class Order(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
@@ -22,7 +29,6 @@ data class Order(
     val orderDate: String,
     val deliveryDate: String,
 
-    // STATUS: Pending, Working, Completed, Cancelled, Delayed, Delivered
     var status: String = "Pending",
     var processedOn: String = "",
     var heaterType: String = "",
@@ -36,7 +42,7 @@ data class Order(
     var turns: String = "",
     var finalAmpere: String = "",
     var completedOn: String = "",
-    var deliveredOn: String = "", // NEW: Delivered On Date
+    var deliveredOn: String = "",
 
     var photoPath: String? = null,
     var videoPath: String? = null,
@@ -46,10 +52,8 @@ data class Order(
     var isDeleted: Boolean = false,
     var archived: Boolean = false,
     
-    // NEW: Auditing
     var processedBy: String = "",
 
-    // 💰 NEW: Payment Tracking
     var isPaid: Boolean = false,
     var dueAmount: Double = 0.0
 )

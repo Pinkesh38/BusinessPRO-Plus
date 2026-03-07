@@ -1,23 +1,23 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.example.businessproplus"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.businessproplus"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 6
-        versionName = "1.5"
+        targetSdk = 36
+        versionCode = 7
+        versionName = "1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        // 🛡️ SECURITY: Define Master PIN in BuildConfig to avoid hardcoding in strings.xml
         buildConfigField("String", "MASTER_PIN", "\"1234\"")
+        resConfigs("en", "hi", "gu")
     }
 
     buildTypes {
@@ -66,13 +66,21 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     
-    // WorkManager for Daily Sync
+    // 🛡️ PAGING 3
+    implementation(libs.androidx.paging.runtime)
+    
+    // HILT
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    
+    // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
     
     // Database (Room)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.paging) // 🛡️ ROOM PAGING Integration
     
     // Google Drive & Auth
     implementation(libs.google.auth)

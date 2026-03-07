@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -49,6 +50,7 @@ class NewOrderActivity : AppCompatActivity() {
     private var mediaRecorder: MediaRecorder? = null
     private var isRecording = false
 
+    // 🛡️ QA LIMITS: Prevent arithmetic overflows
     private val MAX_PRICE = 10000000.0 // 1 Crore limit for UI stability
     private val MAX_QTY = 1000000 // 1 Million limit
 
@@ -89,6 +91,31 @@ class NewOrderActivity : AppCompatActivity() {
         }
 
         setupListeners(sdfDate)
+        setupItemAutofill()
+    }
+
+    private fun setupItemAutofill() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val items = db.itemDao().getAllItems()
+                val itemNames = items.map { it.itemName }
+                withContext(Dispatchers.Main) {
+                    if (!isFinishing) {
+                        val adapter = ArrayAdapter(this@NewOrderActivity, android.R.layout.simple_dropdown_item_1line, itemNames)
+                        binding.etItemDescription.setAdapter(adapter)
+                        
+                        binding.etItemDescription.setOnItemClickListener { _, _, position, _ ->
+                            val selectedName = adapter.getItem(position)
+                            val selectedItem = items.find { it.itemName == selectedName }
+                            selectedItem?.let {
+                                binding.etPrice.setText(it.salesPrice.toString())
+                                Toast.makeText(applicationContext, "In Stock: ${it.currentStock}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) { }
+        }
     }
 
     private fun setupWindowInsets() {
@@ -118,7 +145,7 @@ class NewOrderActivity : AppCompatActivity() {
                 val party = withContext(Dispatchers.IO) {
                     db.partyDao().getPartyByName(text.toString().trim())
                 }
-                if (party != null) binding.etContactNo.setText(party.contactNo)
+                if (party != null && !isFinishing) binding.etContactNo.setText(party.contactNo)
             }
         }
 
@@ -128,8 +155,7 @@ class NewOrderActivity : AppCompatActivity() {
                 binding.btnOrderDate.text = sdfDate.format(orderDateCalendar.time)
             }, orderDateCalendar.get(Calendar.YEAR), orderDateCalendar.get(Calendar.MONTH), orderDateCalendar.get(Calendar.DAY_OF_MONTH))
             
-            // 🛡️ QA FIX: Prevent "Time Traveler" fraud. Order date cannot be in future (optional) 
-            // or too far in past. Let's allow past but prevent future for Order Date.
+            // 🛡️ QA FIX: Prevent future orders
             picker.datePicker.maxDate = System.currentTimeMillis()
             picker.show()
         }
@@ -142,7 +168,7 @@ class NewOrderActivity : AppCompatActivity() {
                 }, currentDelCal.get(Calendar.HOUR_OF_DAY), currentDelCal.get(Calendar.MINUTE), false).show()
             }, currentDelCal.get(Calendar.YEAR), currentDelCal.get(Calendar.MONTH), currentDelCal.get(Calendar.DAY_OF_MONTH))
             
-            // 🛡️ QA FIX: Delivery date must be Today or in Future
+            // 🛡️ QA FIX: Prevent past deliveries
             picker.datePicker.minDate = System.currentTimeMillis() - 1000
             picker.show()
         }
@@ -155,64 +181,12 @@ class NewOrderActivity : AppCompatActivity() {
         binding.btnVideo.setOnClickListener { handleMedia("video") }
         binding.btnAudio.setOnClickListener { handleVoiceRecording() }
 
-        binding.btnSaveOrder.setOnClickListener { validateAndSave() }
-    }
-
-    private fun handleVoiceRecording() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
-            return
-        }
-
-        if (isRecording) {
-            stopRecording()
-        } else {
-            startRecording()
-        }
-    }
-
-    private fun startRecording() {
-        val file = createMediaFile("VOICE_", ".m4a")
-        audioPath = file.absolutePath
-        
-        mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            MediaRecorder(this)
-        } else {
-            @Suppress("DEPRECATION")
-            MediaRecorder()
-        }.apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setOutputFile(audioPath)
-            try {
-                prepare()
-                start()
-                isRecording = true
-                binding.btnAudio.text = "Recording..."
-                binding.btnAudio.icon = ContextCompat.getDrawable(this@NewOrderActivity, android.R.drawable.ic_media_pause)
-                Toast.makeText(this@NewOrderActivity, "Recording started", Toast.LENGTH_SHORT).show()
-            } catch (e: IOException) {
-                // Fail silently or log
+        binding.btnSaveOrder.setOnClickListener {
+            // 🛡️ QA FIX: Double-tap lock
+            if (binding.btnSaveOrder.isEnabled) {
+                binding.btnSaveOrder.isEnabled = false
+                validateAndSave()
             }
-        }
-    }
-
-    private fun stopRecording() {
-        mediaRecorder?.apply {
-            try {
-                stop()
-                release()
-            } catch (e: Exception) {
-                // Fail silently or log
-            }
-        }
-        mediaRecorder = null
-        if (isRecording) {
-            isRecording = false
-            binding.btnAudio.text = "Voice"
-            binding.btnAudio.icon = ContextCompat.getDrawable(this, android.R.drawable.ic_btn_speak_now)
-            Toast.makeText(this, "Voice Attached", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -221,7 +195,7 @@ class NewOrderActivity : AppCompatActivity() {
         val price = binding.etPrice.text.toString().toDoubleOrNull() ?: 0.0
         val advance = binding.etAdvancePayment.text.toString().toDoubleOrNull() ?: 0.0
         
-        // 🛡️ QA FIX: Prevent Billionaire Input overflows
+        // 🛡️ QA FIX: Prevent extreme value rendering
         if (qty > MAX_QTY || price > MAX_PRICE) {
             binding.tvTotal.text = "INVALID"
             binding.tvRemaining.text = "INVALID"
@@ -235,14 +209,44 @@ class NewOrderActivity : AppCompatActivity() {
         binding.tvRemaining.text = String.format("₹%.2f", remaining)
     }
 
-    private fun handleMedia(type: String) {
-        if (checkPermissions()) {
-            val file = createMediaFile(if (type == "photo") "IMG_" else "VID_", if (type == "photo") ".jpg" else ".mp4")
-            val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
-            if (type == "photo") { photoPath = file.absolutePath; photoUri = uri; takePhotoLauncher.launch(uri) }
-            else { videoPath = file.absolutePath; videoUri = uri; takeVideoLauncher.launch(uri) }
-        } else {
-            requestPermissionLauncher.launch(arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO))
+    private fun handleVoiceRecording() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissionLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
+            return
+        }
+
+        if (isRecording) stopRecording() else startRecording()
+    }
+
+    private fun startRecording() {
+        val file = createMediaFile("VOICE_", ".m4a")
+        audioPath = file.absolutePath
+        
+        mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(this) else @Suppress("DEPRECATION") MediaRecorder()
+        mediaRecorder?.apply {
+            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            setOutputFile(audioPath)
+            try {
+                prepare()
+                start()
+                isRecording = true
+                binding.btnAudio.text = "Recording..."
+                Toast.makeText(applicationContext, "Recording started", Toast.LENGTH_SHORT).show()
+            } catch (e: IOException) { }
+        }
+    }
+
+    private fun stopRecording() {
+        mediaRecorder?.apply {
+            try { stop(); release() } catch (e: Exception) { }
+        }
+        mediaRecorder = null
+        if (isRecording) {
+            isRecording = false
+            binding.btnAudio.text = "Voice"
+            Toast.makeText(applicationContext, "Voice Attached", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -251,45 +255,27 @@ class NewOrderActivity : AppCompatActivity() {
 
         val customerName = binding.etCustomerName.text.toString().trim()
         val itemDesc = binding.etItemDescription.text.toString().trim()
-        val qtyText = binding.etQuantity.text.toString().trim()
-        val priceText = binding.etPrice.text.toString().trim()
-        val advanceText = binding.etAdvancePayment.text.toString().trim()
-
-        val qtyOrdered = qtyText.toIntOrNull() ?: 0
-        val price = priceText.toDoubleOrNull() ?: 0.0
-        val advance = advanceText.toDoubleOrNull() ?: 0.0
+        val qtyOrdered = binding.etQuantity.text.toString().toIntOrNull() ?: 0
+        val price = binding.etPrice.text.toString().toDoubleOrNull() ?: 0.0
+        val advance = binding.etAdvancePayment.text.toString().toDoubleOrNull() ?: 0.0
 
         if (customerName.isEmpty() || itemDesc.isEmpty() || qtyOrdered <= 0) {
             Toast.makeText(this, "Mandatory fields: Customer, Item, and Qty > 0", Toast.LENGTH_SHORT).show()
+            binding.btnSaveOrder.isEnabled = true
             return
         }
         
-        // 🛡️ QA FIX: Final Validation for extreme inputs
-        if (qtyOrdered > MAX_QTY || price > MAX_PRICE || advance > (qtyOrdered * price)) {
-            Toast.makeText(this, "Invalid financial values or quantity too high.", Toast.LENGTH_SHORT).show()
+        if (qtyOrdered > MAX_QTY || price > MAX_PRICE) {
+            Toast.makeText(this, "Value too high for processing.", Toast.LENGTH_SHORT).show()
+            binding.btnSaveOrder.isEnabled = true
             return
         }
 
-        binding.btnSaveOrder.isEnabled = false
-
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                // Ensure party exists
                 if (db.partyDao().getPartyByName(customerName) == null) {
                     db.partyDao().insertParty(Party(partyType = "Customer", companyName = customerName, contactPerson = customerName, contactNo = binding.etContactNo.text.toString(), address = "", creditLimit = 0.0, creditPeriodDays = 0, notes = "Auto-created"))
-                }
-
-                val item = db.itemDao().getItemByName(itemDesc)
-                if (item != null) {
-                    val stockChange = if (isEditMode) qtyOrdered - initialQuantity else qtyOrdered
-                    if (item.currentStock < stockChange) {
-                        withContext(Dispatchers.Main) { 
-                            Toast.makeText(this@NewOrderActivity, "Stock error: Only ${item.currentStock} left!", Toast.LENGTH_LONG).show()
-                            binding.btnSaveOrder.isEnabled = true
-                        }
-                        return@launch
-                    }
-                    item.currentStock -= stockChange
-                    db.itemDao().updateItem(item)
                 }
 
                 val order = Order(
@@ -310,16 +296,19 @@ class NewOrderActivity : AppCompatActivity() {
                     remarks = binding.etOrderRemarks.text.toString().trim()
                 )
                 
-                if (isEditMode) db.orderDao().updateOrder(order) else db.orderDao().insertOrder(order)
+                // 🛡️ Transactional Update
+                db.orderDao().createOrderWithStockUpdate(order, db.itemDao())
 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@NewOrderActivity, "Order Saved", Toast.LENGTH_SHORT).show()
-                    finish()
+                    if (!isFinishing) {
+                        Toast.makeText(applicationContext, "Order Secured", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     binding.btnSaveOrder.isEnabled = true
-                    Toast.makeText(this@NewOrderActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(applicationContext, "Save Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -348,7 +337,16 @@ class NewOrderActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkPermissions() = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+    private fun handleMedia(type: String) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            val file = createMediaFile(if (type == "photo") "IMG_" else "VID_", if (type == "photo") ".jpg" else ".mp4")
+            val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
+            if (type == "photo") { photoPath = file.absolutePath; photoUri = uri; takePhotoLauncher.launch(uri) }
+            else { videoPath = file.absolutePath; videoUri = uri; takeVideoLauncher.launch(uri) }
+        } else {
+            requestPermissionLauncher.launch(arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO))
+        }
+    }
 
     private fun createMediaFile(prefix: String, suffix: String): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())

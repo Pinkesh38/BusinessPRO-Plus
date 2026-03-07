@@ -1,45 +1,38 @@
 package com.example.businessproplus
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class OrderRepository(private val orderDao: OrderDao, private val itemDao: ItemDao, private val partyDao: PartyDao) {
+@Singleton
+class OrderRepository @Inject constructor(
+    private val orderDao: OrderDao, 
+    private val itemDao: ItemDao
+) {
 
-    suspend fun getOrderById(id: Int) = withContext(Dispatchers.IO) {
-        orderDao.getOrderById(id)
+    fun getFilteredOrdersPaged(partyName: String, status: String, sortType: Int): Flow<PagingData<Order>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false,
+                initialLoadSize = 20
+            ),
+            pagingSourceFactory = { orderDao.getFilteredOrdersPaged(partyName, status, sortType) }
+        ).flow
     }
 
-    suspend fun saveOrder(order: Order, qtyDelta: Int) = withContext(Dispatchers.IO) {
-        // Atomic Business Logic: Update Stock and Save Order
-        val item = order.itemDescription.let { itemDao.getItemByName(it) }
-        if (item != null) {
-            item.currentStock -= qtyDelta
-            itemDao.updateItem(item)
-        }
-        
-        if (order.id == 0) {
-            orderDao.insertOrder(order)
-        } else {
-            orderDao.updateOrder(order)
-        }
+    suspend fun createOrderWithStockUpdate(order: Order) {
+        orderDao.createOrderWithStockUpdate(order, itemDao)
     }
 
-    suspend fun deleteOrder(order: Order) = withContext(Dispatchers.IO) {
-        orderDao.delete(order)
+    suspend fun deleteOrderWithStockRestore(orderId: Int) {
+        orderDao.deleteOrderWithStockRestore(orderId, itemDao)
     }
-    
-    suspend fun ensurePartyExists(name: String, contact: String) = withContext(Dispatchers.IO) {
-        if (partyDao.getPartyByName(name) == null) {
-            partyDao.insertParty(Party(
-                partyType = "Customer", 
-                companyName = name, 
-                contactPerson = name, 
-                contactNo = contact, 
-                address = "", 
-                creditLimit = 0.0, 
-                creditPeriodDays = 0, 
-                notes = "Auto-created"
-            ))
-        }
+
+    suspend fun getOrderById(orderId: Int): Order? {
+        return orderDao.getOrderById(orderId)
     }
 }

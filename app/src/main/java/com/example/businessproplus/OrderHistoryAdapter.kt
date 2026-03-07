@@ -8,18 +8,23 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 
 class OrderHistoryAdapter(
     private val context: Context,
-    private var orders: List<Order>,
     private val onOrderClick: (Order) -> Unit,
     private val onDeleteOrder: (Order) -> Unit
-) : RecyclerView.Adapter<OrderHistoryAdapter.OrderViewHolder>() {
+) : PagingDataAdapter<Order, OrderHistoryAdapter.OrderViewHolder>(OrderDiffCallback()) {
 
     private var expandedPosition = -1
+
+    fun getItemAt(position: Int): Order? {
+        return getItem(position)
+    }
 
     inner class OrderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvOrderNo: TextView = view.findViewById(R.id.tvOrderNo)
@@ -33,10 +38,8 @@ class OrderHistoryAdapter(
         val tvRemainingPayment: TextView = view.findViewById(R.id.tvRemainingPayment)
         val btnViewDetails: MaterialButton = view.findViewById(R.id.btnViewDetails)
         val btnDelete: MaterialButton = view.findViewById(R.id.btnDeleteOrder)
-        val cardOrder: MaterialCardView = view.findViewById(R.id.cardOrder)
         val tvMilestoneInfo: TextView = view.findViewById(R.id.tvMilestoneInfo)
         
-        // Workflow Steps
         val steps = listOf(
             view.findViewById<ImageView>(R.id.step1),
             view.findViewById<ImageView>(R.id.step2),
@@ -58,7 +61,7 @@ class OrderHistoryAdapter(
     }
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
-        val order = orders[position]
+        val order = getItem(position) ?: return
         val isExpanded = position == expandedPosition
 
         holder.tvOrderNo.text = "#ORD-${order.id}"
@@ -69,7 +72,6 @@ class OrderHistoryAdapter(
         holder.tvTotalAmount.text = "₹${order.total}"
         holder.tvRemainingPayment.text = "₹${order.remainingPayment}"
 
-        // Milestone Info logic
         val milestoneText = when (order.status) {
             "Completed" -> "Completed on: ${order.completedOn}"
             "Delivered" -> "Delivered on: ${order.deliveredOn}"
@@ -80,13 +82,11 @@ class OrderHistoryAdapter(
         }
         holder.tvMilestoneInfo.text = milestoneText
 
-        // 🚀 Workflow Stepper Logic
         val activeStep = when (order.status) {
             "Pending" -> 1
-            "Working" -> 3 // Assume inventory is picked when started
+            "Working" -> 3
             "Completed" -> 4
             "Delivered" -> 5
-            "Cancelled" -> 0
             else -> 1
         }
 
@@ -95,21 +95,14 @@ class OrderHistoryAdapter(
 
         holder.steps.forEachIndexed { index, img ->
             val stepNum = index + 1
-            if (stepNum <= activeStep) {
-                img.setImageResource(android.R.drawable.checkbox_on_background)
-                img.setColorFilter(activeColor)
-            } else {
-                img.setImageResource(android.R.drawable.checkbox_off_background)
-                img.setColorFilter(inactiveColor)
-            }
+            img.setImageResource(if (stepNum <= activeStep) android.R.drawable.checkbox_on_background else android.R.drawable.checkbox_off_background)
+            img.setColorFilter(if (stepNum <= activeStep) activeColor else inactiveColor)
         }
 
         holder.lines.forEachIndexed { index, line ->
-            val lineNum = index + 1
-            line.setBackgroundColor(if (lineNum < activeStep) activeColor else inactiveColor)
+            line.setBackgroundColor(if (index + 1 < activeStep) activeColor else inactiveColor)
         }
 
-        // Status Badge Colors
         val (bgColor, textColor) = when (order.status.lowercase()) {
             "delivered" -> Color.parseColor("#E1F5FE") to Color.parseColor("#01579B")
             "completed" -> Color.parseColor("#E8F5E9") to Color.parseColor("#2E7D32")
@@ -133,10 +126,8 @@ class OrderHistoryAdapter(
         holder.btnDelete.setOnClickListener { onDeleteOrder(order) }
     }
 
-    override fun getItemCount() = orders.size
-
-    fun updateList(newOrders: List<Order>) {
-        orders = newOrders
-        notifyDataSetChanged()
+    class OrderDiffCallback : DiffUtil.ItemCallback<Order>() {
+        override fun areItemsTheSame(oldItem: Order, newItem: Order) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Order, newItem: Order) = oldItem == newItem
     }
 }

@@ -92,10 +92,19 @@
             </LinearLayout>
         </LinearLayout>
 
-        <HorizontalScrollView
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnViewOrders"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:text="View Full History (All Orders)"
+            app:icon="@android:drawable/ic_menu_recent_history" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:scrollbars="none">
 
             <LinearLayout
@@ -145,15 +154,6 @@
                     android:layout_height="wrap_content"
                     android:text="Edit"
                     app:icon="@android:drawable/ic_menu_edit" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnViewOrders"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="Orders"
-                    app:icon="@android:drawable/ic_menu_view" />
             </LinearLayout>
         </HorizontalScrollView>
     </LinearLayout>

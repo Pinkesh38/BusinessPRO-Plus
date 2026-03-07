@@ -7,31 +7,33 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.Spinner
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.businessproplus.databinding.ActivityReportsDashboardBinding
-import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.utils.ColorTemplate
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
+@AndroidEntryPoint
 class ReportsDashboardActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityReportsDashboardBinding
     private val db by lazy { AppDatabase.getDatabase(applicationContext) }
+    
+    private val viewModel: ReportsDashboardViewModel by viewModels()
     
     private var startDate: Calendar = Calendar.getInstance().apply { add(Calendar.MONTH, -1) }
     private var endDate: Calendar = Calendar.getInstance()
@@ -39,10 +41,6 @@ class ReportsDashboardActivity : AppCompatActivity() {
 
     private val createPdfLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri ->
         uri?.let { exportToPdf(it) }
-    }
-
-    private val createCsvLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
-        uri?.let { exportToCsv(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +60,8 @@ class ReportsDashboardActivity : AppCompatActivity() {
 
         setupFilters()
         setupExportButtons()
-        loadData()
+        observeViewModel()
+        triggerLoad()
     }
 
     private fun setupFilters() {
@@ -70,121 +69,155 @@ class ReportsDashboardActivity : AppCompatActivity() {
         binding.btnEndDate.text = sdf.format(endDate.time)
 
         binding.btnStartDate.setOnClickListener {
-            showDatePicker(startDate) {
+            showDatePicker(startDate, isStartDate = true) {
+                if (startDate.after(endDate)) {
+                    endDate.time = startDate.time
+                    binding.btnEndDate.text = sdf.format(endDate.time)
+                }
                 binding.btnStartDate.text = sdf.format(startDate.time)
-                loadData()
+                triggerLoad()
             }
         }
 
         binding.btnEndDate.setOnClickListener {
-            showDatePicker(endDate) {
+            showDatePicker(endDate, isStartDate = false) {
                 binding.btnEndDate.text = sdf.format(endDate.time)
-                loadData()
+                triggerLoad()
             }
         }
 
         val reportTypes = arrayOf("Sales Analysis", "Customer Activity", "Revenue Trends")
         binding.spinnerReportType.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, reportTypes)
         binding.spinnerReportType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) { loadData() }
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) { triggerLoad() }
             override fun onNothingSelected(p0: AdapterView<*>?) {}
         }
     }
 
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    if (isFinishing || isDestroyed) return@collect
+                    
+                    when (state) {
+                        is ReportUiState.Loading -> {
+                            binding.progressBarReports.visibility = View.VISIBLE
+                        }
+                        is ReportUiState.Success -> {
+                            binding.progressBarReports.visibility = View.GONE
+                            updateUI(state.data)
+                        }
+                        is ReportUiState.Error -> {
+                            binding.progressBarReports.visibility = View.GONE
+                            Toast.makeText(applicationContext, "Data Error: ${state.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun triggerLoad() {
+        val startStr = sdf.format(startDate.time)
+        val endStr = sdf.format(endDate.time)
+        
+        val prevStart = Calendar.getInstance().apply { time = startDate.time; add(Calendar.MONTH, -1) }
+        val prevEnd = Calendar.getInstance().apply { time = endDate.time; add(Calendar.MONTH, -1) }
+        
+        viewModel.loadData(
+            startStr, endStr,
+            sdf.format(prevStart.time), sdf.format(prevEnd.time)
+        )
+    }
+
+    private fun updateUI(data: ReportData) {
+        // Updated to use modular KPI cards via binding
+        binding.cardRevenue.tvLabel.text = "REVENUE"
+        binding.cardRevenue.tvValue.text = String.format("₹%.2f", data.revenue)
+        
+        binding.cardPending.tvLabel.text = "PENDING"
+        binding.cardPending.tvValue.text = String.format("₹%.2f", data.totalPending)
+        
+        binding.cardOrders.tvLabel.text = "ORDERS"
+        binding.cardOrders.tvValue.text = data.orderCount.toString()
+        
+        binding.cardGrowth.tvLabel.text = "GROWTH"
+        binding.cardGrowth.tvValue.text = String.format("%s%.1f%%", if (data.growth >= 0) "+" else "", data.growth)
+
+        updateCharts(data.topItems, data.trends)
+    }
+
+    private fun updateCharts(topItems: List<ReportItem>, trends: List<TrendItem>) {
+        if (topItems.isEmpty()) {
+            binding.pieChartProducts.clear()
+            binding.pieChartProducts.setNoDataText("No Sales Data Found")
+        } else {
+            val pieEntries = topItems.map { PieEntry(it.count.toFloat(), it.name) }
+            val pieDataSet = PieDataSet(pieEntries, "").apply {
+                colors = ColorTemplate.MATERIAL_COLORS.toList()
+                valueTextColor = Color.WHITE
+                valueTextSize = 12f
+            }
+            binding.pieChartProducts.data = PieData(pieDataSet)
+            binding.pieChartProducts.animateY(800)
+        }
+        binding.pieChartProducts.invalidate()
+
+        if (trends.isEmpty()) {
+            binding.barChartRevenue.clear()
+        } else {
+            val barEntries = trends.mapIndexed { index, trend -> BarEntry(index.toFloat(), trend.dailyTotal.toFloat()) }
+            val barDataSet = BarDataSet(barEntries, "Daily Revenue").apply {
+                color = Color.parseColor("#1E3A8A")
+            }
+            binding.barChartRevenue.data = BarData(barDataSet)
+            binding.barChartRevenue.animateY(800)
+        }
+        binding.barChartRevenue.invalidate()
+    }
+
     private fun setupExportButtons() {
         binding.btnExportPdf.setOnClickListener {
-            val fileName = "BusinessPRO_Full_Report_${System.currentTimeMillis()}.pdf"
-            createPdfLauncher.launch(fileName)
-        }
-
-        binding.btnExportCsv.setOnClickListener {
-            val fileName = "BusinessPRO_Sales_Export_${System.currentTimeMillis()}.csv"
-            createCsvLauncher.launch(fileName)
+            if (binding.btnExportPdf.isEnabled) {
+                binding.btnExportPdf.isEnabled = false
+                createPdfLauncher.launch("BusinessPRO_Report_${System.currentTimeMillis()}.pdf")
+            }
         }
     }
 
     private fun exportToPdf(uri: Uri) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val allOrders = db.orderDao().getAllOrders()
-            val success = PdfExporter(this@ReportsDashboardActivity)
-                .exportOrdersToPdf(uri, "BusinessPRO+ Master Order Report", allOrders)
-            
-            withContext(Dispatchers.Main) {
-                val msg = if (success) "PDF Exported Successfully!" else "PDF Export Failed"
-                Toast.makeText(this@ReportsDashboardActivity, msg, Toast.LENGTH_SHORT).show()
+            try {
+                val allOrders = db.orderDao().getAllOrders()
+                val success = PdfExporter(applicationContext).exportOrdersToPdf(uri, "Business Report", allOrders)
+                withContext(Dispatchers.Main) {
+                    if (!isFinishing && !isDestroyed) {
+                        binding.btnExportPdf.isEnabled = true
+                        Toast.makeText(applicationContext, if (success) "Report Saved!" else "Export Failed", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    if (!isFinishing && !isDestroyed) {
+                        binding.btnExportPdf.isEnabled = true
+                    }
+                }
             }
         }
     }
 
-    private fun exportToCsv(uri: Uri) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val allOrders = db.orderDao().getAllOrders()
-            val success = CsvExporter(this@ReportsDashboardActivity)
-                .exportOrdersToCsv(uri, allOrders)
-            
-            withContext(Dispatchers.Main) {
-                val msg = if (success) "CSV Exported Successfully!" else "CSV Export Failed"
-                Toast.makeText(this@ReportsDashboardActivity, msg, Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun showDatePicker(calendar: Calendar, onDateSet: () -> Unit) {
-        DatePickerDialog(this, { _, year, month, day ->
+    private fun showDatePicker(calendar: Calendar, isStartDate: Boolean, onDateSet: () -> Unit) {
+        if (isFinishing) return
+        val picker = DatePickerDialog(this, { _, year, month, day ->
             calendar.set(year, month, day)
             onDateSet()
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
-    }
-
-    private fun loadData() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val startStr = sdf.format(startDate.time)
-            val endStr = sdf.format(endDate.time)
-
-            val revenue = db.orderDao().getRevenueForRange(startStr, endStr) ?: 0.0
-            val orderCount = db.orderDao().getOrderCountForRange(startStr, endStr)
-            val totalPending = db.orderDao().getTotalToCollect() ?: 0.0
-
-            val prevStart = Calendar.getInstance().apply { time = startDate.time; add(Calendar.MONTH, -1) }
-            val prevEnd = Calendar.getInstance().apply { time = endDate.time; add(Calendar.MONTH, -1) }
-            val prevRevenue = db.orderDao().getRevenueForRange(sdf.format(prevStart.time), sdf.format(prevEnd.time)) ?: 0.0
-            val growth = if (prevRevenue > 0) ((revenue - prevRevenue) / prevRevenue) * 100 else 0.0
-
-            val topItems = db.orderDao().getTopSellingItems(5)
-            val trends = db.orderDao().getDailyRevenueTrend(startStr)
-
-            withContext(Dispatchers.Main) {
-                binding.tvReportRevenue.text = String.format("₹%.2f", revenue)
-                binding.tvReportToCollect.text = String.format("₹%.2f", totalPending)
-                binding.tvReportOrders.text = orderCount.toString()
-                binding.tvGrowthPercent.text = String.format("%s%.1f%%", if (growth >= 0) "+" else "", growth)
-                binding.tvGrowthPercent.setTextColor(if (growth >= 0) Color.parseColor("#2E7D32") else Color.RED)
-
-                updateCharts(topItems, trends)
-            }
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+        
+        if (!isStartDate) {
+            picker.datePicker.minDate = startDate.timeInMillis
         }
-    }
-
-    private fun updateCharts(topItems: List<ReportItem>, trends: List<TrendItem>) {
-        val pieEntries = topItems.map { PieEntry(it.count.toFloat(), it.name) }
-        val pieDataSet = PieDataSet(pieEntries, "").apply {
-            colors = ColorTemplate.MATERIAL_COLORS.toList()
-            valueTextColor = Color.WHITE
-            valueTextSize = 12f
-        }
-        binding.pieChartProducts.data = PieData(pieDataSet)
-        binding.pieChartProducts.invalidate()
-
-        val barEntries = trends.mapIndexed { index, trend -> BarEntry(index.toFloat(), trend.dailyTotal.toFloat()) }
-        val barDataSet = BarDataSet(barEntries, "Daily Revenue").apply {
-            color = Color.parseColor("#1E3A8A")
-        }
-        binding.barChartRevenue.data = BarData(barDataSet)
-        binding.barChartRevenue.invalidate()
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        finish()
-        return true
+        picker.datePicker.maxDate = System.currentTimeMillis()
+        picker.show()
     }
 }

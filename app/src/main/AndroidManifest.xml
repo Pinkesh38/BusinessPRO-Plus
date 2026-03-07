@@ -12,7 +12,8 @@
 
     <application
         android:name=".BusinessProApp"
-        android:allowBackup="true"
+        android:allowBackup="false"
+        tools:replace="android:allowBackup"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -101,9 +102,6 @@
             android:exported="false" />
         <activity
             android:name=".NewOrderActivity"
-            android:exported="false" />
-        <activity
-            android:name=".InventoryActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

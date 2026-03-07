@@ -9,7 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Order::class, Party::class, Item::class, MissedItem::class, User::class, Category::class, UserActivity::class, CalculationHistory::class], version = 31, exportSchema = false)
+@Database(entities = [Order::class, Party::class, Item::class, MissedItem::class, User::class, Category::class, UserActivity::class, CalculationHistory::class], version = 32, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun orderDao(): OrderDao
@@ -61,6 +61,15 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_31_32 = object : Migration(31, 32) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 🛡️ FIX: Added missing indices that were introduced in version 32
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_table_deliveryDate` ON `orders_table` (`deliveryDate`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_table_isDeleted` ON `orders_table` (`isDeleted`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_table_status_deliveryDate` ON `orders_table` (`status`, `deliveryDate`)")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -68,9 +77,8 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "business_pro_database"
                 )
-                    .addMigrations(MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_30, MIGRATION_30_31)
-                    // 🛡️ FIX: Changed to true to allow automatic recovery if a migration fails on different hardware
-                    .fallbackToDestructiveMigration(dropAllTables = true) 
+                    .addMigrations(MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_30, MIGRATION_30_31, MIGRATION_31_32)
+                    .fallbackToDestructiveMigration() 
                     .addCallback(DatabaseCallback(context))
                     .build()
                 INSTANCE = instance

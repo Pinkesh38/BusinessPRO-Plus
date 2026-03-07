@@ -16,6 +16,8 @@ import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -60,27 +62,34 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun loadDashboardData() {
-        // Show subtle loading state (could add a ProgressBar here)
         lifecycleScope.launch(Dispatchers.IO) {
             val db = AppDatabase.getDatabase(applicationContext)
             
-            val totalOrders = db.orderDao().getTotalOrderCount()
-            val pendingOrders = db.orderDao().getPendingOrderCount()
-            val lowStockCount = db.itemDao().getLowStockItems().size
+            // 🛡️ PARALLEL EXECUTION: Fetch independent data points simultaneously
+            val totalOrdersDeferred = async { db.orderDao().getTotalOrderCount() }
+            val pendingOrdersDeferred = async { db.orderDao().getPendingOrderCount() }
+            val lowStockCountDeferred = async { db.itemDao().getLowStockItems().size }
             
             val calendar = Calendar.getInstance()
             val currentMonthYear = SimpleDateFormat("MM/yyyy", Locale.getDefault()).format(calendar.time)
-            val missedSales = db.missedItemDao().getMonthlyEstimatedLoss(currentMonthYear) ?: 0.0
+            val missedSalesDeferred = async { db.missedItemDao().getMonthlyEstimatedLoss(currentMonthYear) ?: 0.0 }
 
-            // Load trend data for the last 6 months
-            val barEntries = ArrayList<BarEntry>()
-            for (i in 5 downTo 0) {
-                val cal = Calendar.getInstance()
-                cal.add(Calendar.MONTH, -i)
-                val monthLabel = SimpleDateFormat("MM/yyyy", Locale.getDefault()).format(cal.time)
-                val monthlyRev = db.orderDao().getMonthlyRevenue(monthLabel) ?: 0.0
-                barEntries.add(BarEntry((5 - i).toFloat(), monthlyRev.toFloat()))
+            // Fetch revenue trends for 6 months in parallel
+            val trendDeferredList = (0..5).map { i ->
+                async {
+                    val cal = Calendar.getInstance()
+                    cal.add(Calendar.MONTH, -i)
+                    val monthLabel = SimpleDateFormat("MM/yyyy", Locale.getDefault()).format(cal.time)
+                    val monthlyRev = db.orderDao().getMonthlyRevenue(monthLabel) ?: 0.0
+                    BarEntry((5 - i).toFloat(), monthlyRev.toFloat())
+                }
             }
+
+            val totalOrders = totalOrdersDeferred.await()
+            val pendingOrders = pendingOrdersDeferred.await()
+            val lowStockCount = lowStockCountDeferred.await()
+            val missedSales = missedSalesDeferred.await()
+            val barEntries = trendDeferredList.awaitAll().sortedBy { it.x }
 
             withContext(Dispatchers.Main) {
                 tvTotalOrders.text = totalOrders.toString()
@@ -88,11 +97,9 @@ class DashboardActivity : AppCompatActivity() {
                 tvStockAlerts.text = lowStockCount.toString()
                 tvMissedSales.text = "₹${missedSales.toInt()}"
 
-                // Highlight low stock in soft red
                 if (lowStockCount > 0) {
                     cardStockAlerts.setCardBackgroundColor(getColor(R.color.accent_red_soft))
                 }
-
                 setupBarChart(barEntries)
             }
         }
@@ -107,9 +114,9 @@ class DashboardActivity : AppCompatActivity() {
 
         barChart.data = BarData(dataSet)
         barChart.description.isEnabled = false
-        barChart.xAxis.isEnabled = false // Minimal look
+        barChart.xAxis.isEnabled = false
         barChart.axisLeft.setDrawGridLines(false)
-        barChart.animateY(1000)
+        barChart.animateY(800)
         barChart.invalidate()
     }
 }
