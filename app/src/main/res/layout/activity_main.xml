@@ -226,10 +226,16 @@
                 android:columnOrderPreserved="false"
                 android:layout_marginBottom="24dp">
 
-                <!-- Card New Order -->
+                <!-- New Sale (Billing) -->
                 <LinearLayout android:id="@+id/cardAddNewOrder" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:orientation="vertical" android:gravity="center" android:padding="8dp" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
-                    <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@android:drawable/ic_input_add" app:tint="@color/primary" android:padding="8dp" android:background="@drawable/bg_circle_surface" android:elevation="1dp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="New Order" android:textSize="12sp" android:layout_marginTop="4dp" android:textColor="@color/on_surface"/>
+                    <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@android:drawable/ic_menu_save" app:tint="@color/primary" android:padding="8dp" android:background="@drawable/bg_circle_surface" android:elevation="1dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Billing" android:textSize="12sp" android:layout_marginTop="4dp" android:textColor="@color/on_surface"/>
+                </LinearLayout>
+
+                <!-- Dues (New) -->
+                <LinearLayout android:id="@+id/btnDues" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:orientation="vertical" android:gravity="center" android:padding="8dp" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
+                    <ImageView android:layout_width="40dp" android:layout_height="40dp" android:src="@android:drawable/ic_dialog_info" app:tint="@color/accent_red" android:padding="8dp" android:background="@drawable/bg_circle_surface" android:elevation="1dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dues" android:textSize="12sp" android:layout_marginTop="4dp" android:textColor="@color/on_surface"/>
                 </LinearLayout>
 
                 <LinearLayout android:id="@+id/btnOrderHistory" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:orientation="vertical" android:gravity="center" android:padding="8dp" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
@@ -263,14 +269,8 @@
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardBackupStatus"
                 style="@style/ModernCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:contentPadding="16dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="16dp" app:contentPadding="16dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
                     <TextView android:id="@+id/tvLastBackup" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Last Backup: Never" android:textColor="@color/on_surface_variant" android:textSize="14sp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

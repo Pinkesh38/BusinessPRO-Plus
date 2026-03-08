@@ -16,14 +16,30 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvCompanyName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Global Industries Ltd."
-            android:textColor="@color/on_surface"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tvCompanyName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Global Industries Ltd."
+                android:textColor="@color/on_surface"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnExportPartyPdf"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_save"
+                app:tint="@color/primary"
+                android:contentDescription="Export Individual PDF" />
+
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/tvContactInfo"

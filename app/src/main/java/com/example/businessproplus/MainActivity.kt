@@ -63,6 +63,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.cardAddNewOrder)?.setOnClickListener(addNewOrderAction)
         findViewById<View>(R.id.fabAddNewOrder)?.setOnClickListener(addNewOrderAction)
 
+        findViewById<View>(R.id.btnDues)?.setOnClickListener { startActivity(Intent(this, DueAmountActivity::class.java)) }
         findViewById<View>(R.id.btnOrderHistory)?.setOnClickListener { startActivity(Intent(this, OrderHistoryActivity::class.java)) }
         findViewById<View>(R.id.btnManageParties)?.setOnClickListener { startActivity(Intent(this, PartyManagementActivity::class.java)) }
         findViewById<View>(R.id.btnTools)?.setOnClickListener { startActivity(Intent(this, OhmsCalculatorActivity::class.java)) }

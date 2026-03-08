@@ -2,11 +2,14 @@ package com.example.businessproplus
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -28,7 +31,11 @@ class PartyManagementActivity : AppCompatActivity() {
     
     private var allPartiesList: List<Party> = emptyList()
     private var searchJob: Job? = null
-    private var isSortAscending = true // A to Z
+    private var isSortAscending = true 
+
+    private val createPdfLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri ->
+        uri?.let { exportAllPartiesToPdf(it) }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +43,7 @@ class PartyManagementActivity : AppCompatActivity() {
         binding = ActivityPartyManagementBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.partyRootLayout) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -60,6 +67,10 @@ class PartyManagementActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.action_export_all -> {
+                createPdfLauncher.launch("BusinessPRO_All_Customers_${System.currentTimeMillis()}.pdf")
+                true
+            }
             R.id.action_sort_az -> {
                 isSortAscending = true
                 filterParties()
@@ -88,12 +99,45 @@ class PartyManagementActivity : AppCompatActivity() {
                 intent.putExtra("PARTY_NAME", party.companyName)
                 startActivity(intent)
             },
+            onExportPdfClick = { party ->
+                // Individual Export handled inside adapter/activity launcher
+                exportIndividualParty(party)
+            },
             onDeleteClick = { party ->
                 showDeleteConfirmDialog(party)
             }
         )
         binding.rvParties.layoutManager = LinearLayoutManager(this)
         binding.rvParties.adapter = adapter
+    }
+
+    private fun exportIndividualParty(party: Party) {
+        val launcher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri ->
+            uri?.let {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val db = AppDatabase.getDatabase(applicationContext)
+                    val success = PdfExporter(applicationContext).exportCustomersWithHistoryToPdf(
+                        it, "Customer Report: ${party.companyName}", listOf(party), db
+                    )
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(applicationContext, if (success) "Report Exported!" else "Failed", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+        launcher.launch("${party.companyName}_History.pdf")
+    }
+
+    private fun exportAllPartiesToPdf(uri: Uri) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val db = AppDatabase.getDatabase(applicationContext)
+            val success = PdfExporter(applicationContext).exportCustomersWithHistoryToPdf(
+                uri, "Complete Client List", allPartiesList, db
+            )
+            withContext(Dispatchers.Main) {
+                Toast.makeText(applicationContext, if (success) "All Records Exported!" else "Failed", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun showDeleteConfirmDialog(party: Party) {
@@ -133,7 +177,21 @@ class PartyManagementActivity : AppCompatActivity() {
     private fun loadParties() {
         lifecycleScope.launch(Dispatchers.IO) {
             val db = AppDatabase.getDatabase(applicationContext)
-            allPartiesList = db.partyDao().getAllParties()
+            val parties = db.partyDao().getAllParties()
+            
+            // 🛡️ SYNC FIX: If lastOrderDate is missing in party_table, fetch it from orders_table
+            val syncedParties = parties.map { party ->
+                if (party.lastOrderDate.isEmpty()) {
+                    val latestDate = db.orderDao().getLatestOrderDateForCustomer(party.companyName)
+                    if (latestDate != null) {
+                        party.lastOrderDate = latestDate
+                        db.partyDao().updateParty(party)
+                    }
+                }
+                party
+            }
+            
+            allPartiesList = syncedParties
             withContext(Dispatchers.Main) {
                 filterParties()
             }

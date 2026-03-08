@@ -10,9 +10,9 @@ import androidx.room.PrimaryKey
         Index(value = ["customerName"]), 
         Index(value = ["orderDate"]), 
         Index(value = ["status"]),
-        Index(value = ["deliveryDate"]), // 🛡️ SENIOR FIX: Speeds up "Closest Delivery" sorting
-        Index(value = ["status", "deliveryDate"]), // 🛡️ SENIOR FIX: Speeds up Dashboard filtering
-        Index(value = ["isDeleted"]) // 🛡️ SENIOR FIX: Speeds up all main list queries
+        Index(value = ["deliveryDate"]), 
+        Index(value = ["status", "deliveryDate"]), 
+        Index(value = ["isDeleted"])
     ]
 )
 data class Order(
@@ -55,5 +55,7 @@ data class Order(
     var processedBy: String = "",
 
     var isPaid: Boolean = false,
-    var dueAmount: Double = 0.0
+    var dueAmount: Double = 0.0,
+    
+    var paymentPromiseDate: String = "" // NEW: Reminder for due payment
 )

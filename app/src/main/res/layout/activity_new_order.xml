@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@android:drawable/ic_menu_revert"
-            app:title="Create New Order"
+            app:title="Create New Bill"
             app:titleTextColor="@color/on_surface" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="180dp"
+        android:paddingBottom="200dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -42,7 +42,7 @@
                 style="@style/section_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PARTY SELECTION" />
+                android:text="CUSTOMER DETAILS" />
 
             <com.google.android.material.card.MaterialCardView
                 style="@style/ModernCard"
@@ -60,7 +60,7 @@
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Select Party / Customer">
+                        android:hint="Customer Name">
                         <AutoCompleteTextView
                             android:id="@+id/etCustomerName"
                             android:layout_width="match_parent"
@@ -83,12 +83,12 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Item Specifications -->
+            <!-- Item Details -->
             <TextView
                 style="@style/section_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ITEM SPECIFICATIONS" />
+                android:text="ITEM DETAILS" />
 
             <com.google.android.material.card.MaterialCardView
                 style="@style/ModernCard"
@@ -198,7 +198,7 @@
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Advance Payment (₹)">
+                        android:hint="Paid Amount (₹)">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etAdvancePayment"
                             android:layout_width="match_parent"
@@ -213,7 +213,7 @@
                 style="@style/section_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="SCHEDULING" />
+                android:text="BILLING DATE \u0026 PROMISE" />
 
             <com.google.android.material.card.MaterialCardView
                 style="@style/ModernCard"
@@ -233,7 +233,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
-                        android:text="Order Date: Today"
+                        android:text="Bill Date: Today"
                         android:textAlignment="viewStart"
                         app:icon="@android:drawable/ic_menu_my_calendar" />
 
@@ -242,69 +242,25 @@
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Select Delivery Date"
+                        android:text="Select Promise Date (Due)"
                         android:textAlignment="viewStart"
                         app:icon="@android:drawable/ic_popup_reminder" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- Media Attachments -->
-            <TextView
-                style="@style/section_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ORDER MEDIA" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnPhoto"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="4dp"
-                    android:text="Photo"
-                    app:icon="@android:drawable/ic_menu_camera" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnVideo"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:layout_marginHorizontal="4dp"
-                    android:text="Video"
-                    app:icon="@android:drawable/presence_video_online" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAudio"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:text="Voice"
-                    app:icon="@android:drawable/ic_btn_speak_now" />
-            </LinearLayout>
 
             <!-- Remarks -->
             <TextView
                 style="@style/section_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TECHNICAL REMARKS" />
+                android:text="REMARKS" />
 
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:hint="Notes for production line...">
+                android:hint="Notes about this sale...">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etOrderRemarks"
                     android:layout_width="match_parent"
@@ -345,7 +301,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TOTAL VALUE" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/on_surface_variant" android:letterSpacing="0.1"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TOTAL BILL" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/on_surface_variant" android:letterSpacing="0.1"/>
                     <TextView android:id="@+id/tvTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₹0.00" android:textSize="24sp" android:textStyle="bold" android:textColor="@color/primary"/>
                 </LinearLayout>
 
@@ -355,7 +311,7 @@
                     android:layout_weight="1"
                     android:orientation="vertical"
                     android:gravity="end">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UNPAID BALANCE" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/on_surface_variant" android:letterSpacing="0.1"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="DUE AMOUNT" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/on_surface_variant" android:letterSpacing="0.1"/>
                     <TextView android:id="@+id/tvRemaining" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₹0.00" android:textSize="24sp" android:textStyle="bold" android:textColor="@color/accent_red"/>
                 </LinearLayout>
             </LinearLayout>
@@ -365,7 +321,7 @@
                 style="@style/ModernButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
-                android:text="Validate &amp; Save Order"
+                android:text="Complete Sale"
                 android:backgroundTint="@color/primary"
                 android:textColor="@color/white"
                 android:textSize="16sp"

@@ -34,6 +34,7 @@ class OrderHistoryAdapter(
         val cardStatusBadge: MaterialCardView = view.findViewById(R.id.cardStatusBadge)
         val layoutDetails: View = view.findViewById(R.id.layoutDetails)
         val tvItemDesc: TextView = view.findViewById(R.id.tvItemDesc)
+        val tvQuantity: TextView = view.findViewById(R.id.tvQuantity)
         val tvTotalAmount: TextView = view.findViewById(R.id.tvTotalAmount)
         val tvRemainingPayment: TextView = view.findViewById(R.id.tvRemainingPayment)
         val btnViewDetails: MaterialButton = view.findViewById(R.id.btnViewDetails)
@@ -69,6 +70,7 @@ class OrderHistoryAdapter(
         holder.tvPartyName.text = order.customerName
         holder.tvStatus.text = order.status.uppercase()
         holder.tvItemDesc.text = order.itemDescription
+        holder.tvQuantity.text = "${order.quantity}"
         holder.tvTotalAmount.text = "₹${order.total}"
         holder.tvRemainingPayment.text = "₹${order.remainingPayment}"
 

@@ -121,12 +121,13 @@ class ReportsDashboardActivity : AppCompatActivity() {
     private fun triggerLoad() {
         val startStr = sdf.format(startDate.time)
         val endStr = sdf.format(endDate.time)
+        val reportType = binding.spinnerReportType.selectedItem?.toString() ?: "Sales Analysis"
         
         val prevStart = Calendar.getInstance().apply { time = startDate.time; add(Calendar.MONTH, -1) }
         val prevEnd = Calendar.getInstance().apply { time = endDate.time; add(Calendar.MONTH, -1) }
         
         viewModel.loadData(
-            startStr, endStr,
+            reportType, startStr, endStr,
             sdf.format(prevStart.time), sdf.format(prevEnd.time)
         )
     }

@@ -2,10 +2,12 @@ package com.example.businessproplus
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -26,6 +28,10 @@ class StockManagementActivity : AppCompatActivity() {
     private lateinit var adapter: StockAdapter
     private var allItemsList: List<Item> = emptyList()
     private var searchJob: Job? = null
+
+    private val createPdfLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri ->
+        uri?.let { exportToPdf(it) }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +82,6 @@ class StockManagementActivity : AppCompatActivity() {
     private fun deleteItem(item: Item) {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                // We use soft delete to maintain order history integrity
                 item.isDeleted = true
                 db.itemDao().updateItem(item)
             }
@@ -99,6 +104,29 @@ class StockManagementActivity : AppCompatActivity() {
             searchJob = lifecycleScope.launch {
                 delay(300)
                 filterItems(text.toString())
+            }
+        }
+
+        binding.btnExportStockPdf.setOnClickListener {
+            createPdfLauncher.launch("BusinessPRO_Stock_Report_${System.currentTimeMillis()}.pdf")
+        }
+    }
+
+    private fun exportToPdf(uri: Uri) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val success = PdfExporter(applicationContext).exportStockToPdf(
+                    uri, 
+                    "Full Inventory Report", 
+                    allItemsList
+                )
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(applicationContext, if (success) "Stock Report Exported!" else "PDF Export Failed", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(applicationContext, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

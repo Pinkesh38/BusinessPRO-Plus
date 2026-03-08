@@ -84,8 +84,48 @@ interface OrderDao {
     @Query("SELECT SUM(remainingPayment) FROM orders_table WHERE isDeleted = 0")
     suspend fun getTotalToCollect(): Double?
 
-    @Query("SELECT itemDescription as name, SUM(quantity) as count FROM orders_table WHERE isDeleted = 0 GROUP BY itemDescription ORDER BY count DESC LIMIT :limit")
-    suspend fun getTopSellingItems(limit: Int): List<ReportItem>
+    // 🚀 IMPROVED ANALYTICS QUERIES
+    
+    @Query("""
+        SELECT itemDescription as name, SUM(quantity) as count 
+        FROM orders_table 
+        WHERE isDeleted = 0 AND orderDate >= :start AND orderDate <= :end
+        GROUP BY itemDescription ORDER BY count DESC LIMIT :limit
+    """)
+    suspend fun getTopSellingItemsInRange(start: String, end: String, limit: Int): List<ReportItem>
+
+    @Query("""
+        SELECT itemDescription as name, SUM(total) as count 
+        FROM orders_table 
+        WHERE isDeleted = 0 AND orderDate >= :start AND orderDate <= :end
+        GROUP BY itemDescription ORDER BY count DESC LIMIT :limit
+    """)
+    suspend fun getTopRevenueItemsInRange(start: String, end: String, limit: Int): List<ReportItem>
+
+    @Query("""
+        SELECT customerName as name, SUM(total) as count 
+        FROM orders_table 
+        WHERE isDeleted = 0 AND orderDate >= :start AND orderDate <= :end
+        GROUP BY customerName ORDER BY count DESC LIMIT :limit
+    """)
+    suspend fun getTopCustomersInRange(start: String, end: String, limit: Int): List<ReportItem>
+
+    @Query("""
+        SELECT heaterType as name, SUM(total) as count 
+        FROM orders_table 
+        WHERE isDeleted = 0 AND orderDate >= :start AND orderDate <= :end AND heaterType != ''
+        GROUP BY heaterType ORDER BY count DESC
+    """)
+    suspend fun getCategorySalesInRange(start: String, end: String): List<ReportItem>
+
+    @Query("""
+        SELECT 'Paid' as name, SUM(advancePayment) as count 
+        FROM orders_table WHERE isDeleted = 0 AND orderDate >= :start AND orderDate <= :end
+        UNION ALL
+        SELECT 'Pending' as name, SUM(remainingPayment) as count 
+        FROM orders_table WHERE isDeleted = 0 AND orderDate >= :start AND orderDate <= :end
+    """)
+    suspend fun getPaymentStatusInRange(start: String, end: String): List<ReportItem>
 
     @Query("SELECT o.orderDate, SUM(o.total) as dailyTotal FROM orders_table o WHERE o.isDeleted = 0 AND o.orderDate >= :startDate GROUP BY o.orderDate ORDER BY o.orderDate ASC")
     suspend fun getDailyRevenueTrend(startDate: String): List<TrendItem>
@@ -93,13 +133,15 @@ interface OrderDao {
     @Query("SELECT * FROM orders_table WHERE customerName = :name AND isDeleted = 0")
     suspend fun getOrdersForCustomer(name: String): List<Order>
 
+    @Query("SELECT MAX(orderDate) FROM orders_table WHERE customerName = :name AND isDeleted = 0")
+    suspend fun getLatestOrderDateForCustomer(name: String): String?
+
     @Query("SELECT SUM(total) FROM orders_table WHERE customerName = :name AND isDeleted = 0")
     suspend fun getTotalRevenueForCustomer(name: String): Double?
     
     @Query("SELECT * FROM orders_table WHERE isDeleted = 0 ORDER BY id DESC")
     suspend fun getAllOrders(): List<Order>
 
-    // 🛡️ AUTOMATION: New query for payment reminders
     @Query("SELECT * FROM orders_table WHERE isDeleted = 0 AND remainingPayment > 0 AND isPaid = 0 ORDER BY orderDate ASC")
     suspend fun getPendingPayments(): List<Order>
 

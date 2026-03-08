@@ -128,6 +128,7 @@
     <string name="setting_timeout">Auto Logout Timeout</string>
     <string name="section_backup">BACKUP &amp; SYNC</string>
     <string name="setting_gdrive">Google Drive Sync</string>
+    <string name="btn_enable_auto_sync">Enable Auto Sync</string>
     <string name="section_preferences">PREFERENCES</string>
     <string name="setting_language">Language</string>
     <string name="setting_dark_mode">Dark Mode</string>

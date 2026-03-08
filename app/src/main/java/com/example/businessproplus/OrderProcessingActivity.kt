@@ -85,7 +85,7 @@ class OrderProcessingActivity : AppCompatActivity() {
             currentOrder = order
             order?.let { o ->
                 binding.tvProcessTitle.text = "Processing Order #${o.id}"
-                binding.tvOrderItem.text = "Product: ${o.itemDescription}"
+                binding.tvOrderItem.text = "Product: ${o.itemDescription} (${o.quantity} Pcs)"
                 binding.tvOrderRemarks.text = "Remarks: ${o.remarks.ifEmpty { "No notes" }}"
 
                 setupMediaVisibility(o)

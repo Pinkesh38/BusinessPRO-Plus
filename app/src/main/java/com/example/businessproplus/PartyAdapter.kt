@@ -6,6 +6,7 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +17,7 @@ class PartyAdapter(
     private var parties: List<Party>,
     private val onEditClick: (Party) -> Unit,
     private val onViewOrdersClick: (Party) -> Unit,
+    private val onExportPdfClick: (Party) -> Unit,
     private val onDeleteClick: (Party) -> Unit
 ) : RecyclerView.Adapter<PartyAdapter.PartyViewHolder>() {
 
@@ -30,6 +32,7 @@ class PartyAdapter(
         val btnEdit: MaterialButton = view.findViewById(R.id.btnEdit)
         val btnViewOrders: MaterialButton = view.findViewById(R.id.btnViewOrders)
         val btnDelete: MaterialButton = view.findViewById(R.id.btnDeleteParty)
+        val btnExportPdf: ImageButton = view.findViewById(R.id.btnExportPartyPdf)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PartyViewHolder {
@@ -45,7 +48,6 @@ class PartyAdapter(
         holder.tvLastOrder.text = if (party.lastOrderDate.isNotEmpty()) party.lastOrderDate else "No orders yet"
         holder.tvCreditLimit.text = "₹${String.format("%.0f", party.creditLimit)}"
 
-        // 🛡️ UI IMPROVEMENT: Click anywhere on the item to edit
         holder.itemView.setOnClickListener { onEditClick(party) }
 
         holder.btnCall.setOnClickListener {
@@ -78,6 +80,7 @@ class PartyAdapter(
         holder.btnEdit.setOnClickListener { onEditClick(party) }
         holder.btnViewOrders.setOnClickListener { onViewOrdersClick(party) }
         holder.btnDelete.setOnClickListener { onDeleteClick(party) }
+        holder.btnExportPdf.setOnClickListener { onExportPdfClick(party) }
     }
 
     override fun getItemCount() = parties.size

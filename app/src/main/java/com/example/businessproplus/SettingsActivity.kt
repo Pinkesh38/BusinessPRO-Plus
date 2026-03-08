@@ -1,5 +1,6 @@
 package com.example.businessproplus
 
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -10,10 +11,10 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.work.*
 import com.example.businessproplus.databinding.ActivitySettingsBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -24,10 +25,10 @@ import com.google.api.services.drive.DriveScopes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -36,7 +37,7 @@ class SettingsActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
-                val account = task.getResult(ApiException::class.java)
+                task.getResult(ApiException::class.java)
                 Toast.makeText(this, "Sign-In Success", Toast.LENGTH_SHORT).show()
                 val prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
                 performBackup(prefs)
@@ -50,6 +51,8 @@ class SettingsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        applyFontStyle(binding.root)
 
         setupToolbar()
         setupViews()
@@ -90,6 +93,20 @@ class SettingsActivity : AppCompatActivity() {
 
         val languages = arrayOf("English", "हिंदी (Hindi)", "ગુજરાતી (Gujarati)")
         binding.spinnerLanguageSettings.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, languages)
+
+        val fontStyles = arrayOf("Default", "Monospace", "Serif", "Sans-Serif")
+        binding.spinnerFontStyle.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, fontStyles)
+        val currentFont = prefs.getString("FONT_STYLE", "Default")
+        binding.spinnerFontStyle.setSelection(fontStyles.indexOf(currentFont))
+
+        val fontSizes = arrayOf("Small", "Normal", "Large", "Extra Large")
+        binding.spinnerFontSize.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, fontSizes)
+        val currentSize = prefs.getString("FONT_SIZE", "Normal")
+        binding.spinnerFontSize.setSelection(fontSizes.indexOf(currentSize))
+
+        val backupHour = prefs.getInt("BACKUP_HOUR", 2)
+        val backupMinute = prefs.getInt("BACKUP_MINUTE", 0)
+        binding.btnBackupTime.text = String.format("Auto Backup Time: %02d:%02d", backupHour, backupMinute)
     }
 
     private fun setupListeners() {
@@ -126,6 +143,42 @@ class SettingsActivity : AppCompatActivity() {
             override fun onNothingSelected(p0: AdapterView<*>?) {}
         }
 
+        binding.spinnerFontStyle.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                val styles = arrayOf("Default", "Monospace", "Serif", "Sans-Serif")
+                val selected = styles[p2]
+                if (selected != prefs.getString("FONT_STYLE", "Default")) {
+                    prefs.edit().putString("FONT_STYLE", selected).apply()
+                    showRestartDialog()
+                }
+            }
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
+        }
+
+        binding.spinnerFontSize.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                val sizes = arrayOf("Small", "Normal", "Large", "Extra Large")
+                val selected = sizes[p2]
+                if (selected != prefs.getString("FONT_SIZE", "Normal")) {
+                    prefs.edit().putString("FONT_SIZE", selected).apply()
+                    showRestartDialog()
+                }
+            }
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
+        }
+
+        binding.btnBackupTime.setOnClickListener {
+            val currentHour = prefs.getInt("BACKUP_HOUR", 2)
+            val currentMinute = prefs.getInt("BACKUP_MINUTE", 0)
+            
+            TimePickerDialog(this, { _, hour, minute ->
+                prefs.edit().putInt("BACKUP_HOUR", hour).putInt("BACKUP_MINUTE", minute).apply()
+                binding.btnBackupTime.text = String.format("Auto Backup Time: %02d:%02d", hour, minute)
+                scheduleBackup(hour, minute)
+                Toast.makeText(this, "Auto Backup Scheduled", Toast.LENGTH_SHORT).show()
+            }, currentHour, currentMinute, false).show()
+        }
+
         binding.layoutChangePin.setOnClickListener { startActivity(Intent(this, ChangePinActivity::class.java)) }
         binding.layoutErrorLog.setOnClickListener { startActivity(Intent(this, ErrorLogActivity::class.java)) }
         binding.layoutActivityLog.setOnClickListener { startActivity(Intent(this, UserActivityActivity::class.java)) }
@@ -150,10 +203,7 @@ class SettingsActivity : AppCompatActivity() {
                         binding.loadingOverlay.visibility = View.GONE
                         if (success) {
                             Toast.makeText(this@SettingsActivity, "Restore Success", Toast.LENGTH_SHORT).show()
-                            
-                            // 🛡️ CRITICAL RECOVERY FIX: Reset the Database instance
                             AppDatabase.destroyInstance()
-                            
                             val intent = Intent(this@SettingsActivity, SplashActivity::class.java)
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)
@@ -175,6 +225,48 @@ class SettingsActivity : AppCompatActivity() {
                 .setNegativeButton("Cancel", null)
                 .show()
         }
+    }
+
+    private fun scheduleBackup(hour: Int, minute: Int) {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, hour)
+        calendar.set(Calendar.MINUTE, minute)
+        calendar.set(Calendar.SECOND, 0)
+
+        if (calendar.timeInMillis <= System.currentTimeMillis()) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        val initialDelay = calendar.timeInMillis - System.currentTimeMillis()
+
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val backupRequest = PeriodicWorkRequestBuilder<DailyBackupWorker>(24, TimeUnit.HOURS)
+            .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "DailyBackupWork",
+            ExistingPeriodicWorkPolicy.REPLACE,
+            backupRequest
+        )
+    }
+
+    private fun showRestartDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Restart Required")
+            .setMessage("App needs to restart to apply new font settings.")
+            .setPositiveButton("Restart Now") { _, _ ->
+                val intent = Intent(this, SplashActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+            .setNegativeButton("Later", null)
+            .show()
     }
 
     private fun performBackup(prefs: android.content.SharedPreferences) {

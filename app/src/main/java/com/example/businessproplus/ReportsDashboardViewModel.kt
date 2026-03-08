@@ -20,7 +20,7 @@ class ReportsDashboardViewModel @Inject constructor(
 
     private var loadJob: Job? = null
 
-    fun loadData(startStr: String, endStr: String, prevStartStr: String, prevEndStr: String) {
+    fun loadData(reportType: String, startStr: String, endStr: String, prevStartStr: String, prevEndStr: String) {
         loadJob?.cancel()
         
         loadJob = viewModelScope.launch {
@@ -32,8 +32,19 @@ class ReportsDashboardViewModel @Inject constructor(
                     val countDeferred = async { orderDao.getOrderCountForRange(startStr, endStr) }
                     val pendingDeferred = async { orderDao.getTotalToCollect() }
                     val prevRevenueDeferred = async { orderDao.getRevenueForRange(prevStartStr, prevEndStr) }
-                    val topItemsDeferred = async { orderDao.getTopSellingItems(5) }
                     val trendsDeferred = async { orderDao.getDailyRevenueTrend(startStr) }
+
+                    // Switch topItems based on selected dropdown option
+                    val topItemsDeferred = async {
+                        when (reportType) {
+                            "Sales Analysis" -> orderDao.getTopSellingItemsInRange(startStr, endStr, 5)
+                            "Revenue Sources" -> orderDao.getTopRevenueItemsInRange(startStr, endStr, 5)
+                            "Top Customers" -> orderDao.getTopCustomersInRange(startStr, endStr, 5)
+                            "Category Trends" -> orderDao.getCategorySalesInRange(startStr, endStr)
+                            "Payment Status" -> orderDao.getPaymentStatusInRange(startStr, endStr)
+                            else -> orderDao.getTopSellingItemsInRange(startStr, endStr, 5)
+                        }
+                    }
 
                     val revenue = revenueDeferred.await() ?: 0.0
                     val orderCount = countDeferred.await()
