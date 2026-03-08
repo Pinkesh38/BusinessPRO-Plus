@@ -1,6 +1,6 @@
 {
-  "versionCode": 6,
-  "versionName": "1.5",
+  "versionCode": 8,
+  "versionName": "1.7",
   "apkUrl": "https://github.com/Pinkesh38/BusinessPRO-Plus/releases/latest/download/app-debug.apk",
-  "releaseNotes": "- Fixed Splash Screen Freeze\n- Fixed Automatic Daily Backup\n- Added OTA Updates"
+  "releaseNotes": "- many app improvments"
 }
